@@ -176,12 +176,12 @@ const HomeView = () => {
           label="Total Events"
           value={loading ? '...' : (stats?.data?.totalEvents ?? '—')}
         />
-        <StatCard
+        {/* <StatCard
           icon={Clock}
           iconBg="bg-green-50"
           label="Total Earnings"
           value={loading ? '...' : (stats?.data?.totalEarnings ?? '—')}
-        />
+        /> */}
         <StatCard
           icon={DollarSign}
           iconBg="bg-green-50"

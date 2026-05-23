@@ -21,12 +21,12 @@ const toPaymentStats = (payload) => {
       hasButton: true,
     },
 
-    {
-      label: 'Total Earnings',
-      value: formatCurrency(totalEarnings),
-      icon: 'Download',
-      hasButton: false,
-    },
+    // {
+    //   label: 'Total Earnings',
+    //   value: formatCurrency(totalEarnings),
+    //   icon: 'Download',
+    //   hasButton: false,
+    // },
     {
       label: 'Manual Balance',
       value: formatCurrency(manualBalance),

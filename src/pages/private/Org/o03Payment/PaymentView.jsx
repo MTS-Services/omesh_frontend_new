@@ -34,7 +34,7 @@ const PaymentView = () => {
   const [payoutLoading, setPayoutLoading] = useState(true);
   const [payoutError, setPayoutError] = useState('');
 
-  const { stats, statesAmount, loading, error, signal, setSignal } = usePaymentsData();
+  const { stats, statesAmount, loading, error, signal } = usePaymentsData();
 
   const handleWithdrawalSuccess = () => {
     window.location.reload();

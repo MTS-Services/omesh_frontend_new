@@ -928,9 +928,11 @@ const CheckoutView = () => {
                   {isSubmitting ? 'Processing...' : 'Confirm '}
                 </button>
 
-                <p className="text-center text-xs text-gray-600">
-                  By confirming, you agree to our terms and conditions
-                </p>
+                <Link to="/privacy" className="block">
+                  <p className="text-center text-xs text-gray-600 underline">
+                    By confirming, you agree to our terms and conditions
+                  </p>
+                </Link>
               </div>
             </div>
           </div>
