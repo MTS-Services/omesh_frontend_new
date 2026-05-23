@@ -1,0 +1,6 @@
+{
+  "welcome": "Benvenuto in React",
+  "greeting": "Ciao, {{name}}!",
+  "newMessages_one": "Hai {{count}} nuovo messaggio",
+  "newMessages_other": "Hai {{count}} nuovi messaggi"
+}

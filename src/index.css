@@ -1,0 +1,273 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Satisfy&display=swap');
+@import 'tailwindcss';
+
+/* ==================== */
+/* THEME CONFIGURATION  */
+/* ==================== */
+@theme {
+  /* ---------- */
+  /* TYPOGRAPHY */
+  /* ---------- */
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: 'Lato', sans-serif;
+
+  /* Font Sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+  --text-7xl: 72px;
+
+  /* Font Weights */
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* ------ */
+  /* COLORS */
+  /* ------ */
+  /* Core Colors */
+  --color-primary: #f6bc09;
+  --color-secondary: rgb(17, 40, 74);
+  --color-accent: rgb(255, 255, 255);
+  --color-background: #2b0731;
+  --color-border-color: rgb(255, 255, 255);
+  --color-black: #000;
+  --color-white: #fff;
+
+  /* Text Colors */
+  --text-color-heading: #1f1f1f;
+  --text-color-title: #0d263c;
+  --text-color-paragraph: #4b4b4b;
+
+  /* Component Colors */
+  --color-card: rgb(25, 25, 25);
+  --color-cta: rgb(0, 122, 255);
+  --color-cta-active: rgb(0, 102, 215);
+  --color-cta-text: rgb(255, 255, 255);
+  --color-cta-txt-active: rgb(255, 230, 9);
+
+  /* ------- */
+  /* EFFECTS */
+  /* ------- */
+  /* Shadows */
+  --shadow-box-style: 1px 1px 1px 2px rgb(0 0 0 / 0.1);
+  --shadow-btn-style: 2px 2px 0px 2px rgb(0 0 0 / 0.1);
+}
+
+/* ==================== */
+/* BASE STYLES          */
+/* ==================== */
+@layer base {
+  /* ---------- */
+  /* TYPOGRAPHY */
+  /* ---------- */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-primary);
+  }
+
+  h1 {
+    font-size: var(--text-6xl);
+    font-weight: var(--font-bold);
+    color: var(--text-color-heading);
+  }
+
+  h2 {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-semibold);
+    color: var(--text-color-title);
+  }
+
+  h3 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-medium);
+    color: var(--text-color-title);
+  }
+
+  h4 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-medium);
+    color: var(--text-color-title);
+  }
+
+  h5 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-medium);
+    color: var(--text-color-title);
+  }
+
+  p {
+    font-size: var(--text-base);
+    font-family: var(--font-primary);
+    font-weight: var(--font-normal);
+    color: var(--text-color-paragraph);
+    line-height: 1.6;
+  }
+
+  /* ----- */
+  /* LINKS */
+  /* ----- */
+  a {
+    color: var(--color-cta);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+  }
+
+  a:hover {
+    color: var(--color-cta-active);
+  }
+
+  /* ----------- */
+  /* FORM INPUTS */
+  /* ----------- */
+  button,
+  input,
+  select,
+  textarea {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill, stroke, opacity,
+      box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  button {
+    cursor: pointer;
+  }
+  body {
+    background: #fff;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* ===== Custom Scrollbar ===== */
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(143, 143, 143, 0.4);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* For Firefox */
+  body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 100, 100, 0.4) transparent;
+  }
+
+  /* ===== Optional: Hide Scrollbar on Specific Elements ===== */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  @keyframes fade-in-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in-down {
+    animation: fade-in-down 0.3s ease-out both;
+  }
+}
+
+/* ==================== */
+/* COMPONENTS           */
+/* ==================== */
+@layer components {
+  /* BUTTONS */
+  .btn-primary {
+    @apply rounded-lg px-5 py-2.5 font-semibold text-white;
+    background-color: var(--color-cta);
+    color: var(--color-cta-text);
+    box-shadow: var(--shadow-btn-style);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-cta-active);
+    color: var(--color-cta-txt-active);
+  }
+
+  /* CARDS */
+  .card-default {
+    @apply rounded-xl p-6 shadow-lg;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border-color);
+  }
+}
+
+/* ==================== */
+/* UTILITIES           */
+/* ==================== */
+@layer utilities {
+  /* TRANSFORMS */
+  .transform-flip-x {
+    transform: scaleX(-1);
+  }
+
+  .skeleton-shimmer {
+    background-image: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in forwards;
+  }
+
+  @keyframes skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
