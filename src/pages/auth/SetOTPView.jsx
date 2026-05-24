@@ -106,16 +106,20 @@ const SetOTPView = () => {
       navigate('/auth/reset-password');
       return;
     }
+// console.log("=======================",email);
 
     try {
-      toast.info('Resending OTP...');
-      await forgotPassword({ email });
       toast.success('New OTP sent to your email');
+            await forgotPassword(email);
+      // toast.success('New OTP sent to your email');
     } catch (err) {
       console.error('Resend error:', err);
       toast.error('Failed to resend OTP. Please try again.');
     }
   };
+
+
+
 
   return (
     <div className="flex min-h-screen">
