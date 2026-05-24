@@ -128,7 +128,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
             ...(search.trim() ? { search: search.trim() } : {}),
           },
         });
-console.log('============',response);
+// console.log('============',response);
 
         // The `request` helper returns `response.data` (axios response.data).
         // Some backends return `{ data: [...], meta: { ... } }` and some return
@@ -286,23 +286,11 @@ console.log('============',response);
       }
 
       const blob = await response.blob();
-      console.log('Downloaded blob size:', blob.size);
+      // console.log('Downloaded blob size:', blob.size);
       const excelBlob = new Blob([blob], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
-                    const computedMeta = {
-                      currentPage: Number(paginationCandidates.currentPage) || page,
-                      totalPages: inferredTotalPages ?? Math.max(1, Math.ceil((inferredTotalItems || data.length) / inferredItemsPerPage)),
-                      totalItems: inferredTotalItems || data.length,
-                      itemsPerPage: inferredItemsPerPage,
-                      hasNextPage:
-                        paginationCandidates.hasNextPage ??
-                        (inferredTotalItems ? page < Math.ceil(inferredTotalItems / inferredItemsPerPage) : normalized.length === inferredItemsPerPage),
-                      hasPreviousPage: paginationCandidates.hasPreviousPage ?? page > 1,
-                    };
-
-                    console.debug('Computed pagination (fallback):', computedMeta, 'payload.meta=', payload?.meta);
-                    setMeta(computedMeta);
+                  
       const downloadUrl = window.URL.createObjectURL(excelBlob);
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -317,7 +305,7 @@ console.log('============',response);
     }
   };
 
-  console.log('Participants:', meta);
+  // console.log('Participants:', meta);
 
   return (
     <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
