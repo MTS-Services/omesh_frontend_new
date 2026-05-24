@@ -33,9 +33,15 @@ const requestWithFallback = async ({ method, paths, signal }) => {
 // Fetch public events list
 // 🔗 API Integration: Fetch Events List
 export const fetchEventsListServices = async ({ signal } = {}) => {
+  // Request a larger page size to ensure the website endpoint returns more items
+  // (some backends default to 10). Use a high limit so client-side pagination
+  // can split into pages of `ITEMS_PER_PAGE` (8).
   const response = await requestWithFallback({
     method: 'GET',
-    paths: [ENDPOINT.PUBLIC.EVENTS.WEBSITE, '/events/website'],
+    paths: [
+      `${ENDPOINT.PUBLIC.EVENTS.WEBSITE}?limit=1000`,
+      '/events/website?limit=1000',
+    ],
     signal,
   });
 

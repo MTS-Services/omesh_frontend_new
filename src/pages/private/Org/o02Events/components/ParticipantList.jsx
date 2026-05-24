@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, FileText, FileSpreadsheet } from 'lucide-react';
 import { request } from '../../../../../api/request';
+import ServerPagination from '../../../../../components/ui/navigation/ServerPagination';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -15,7 +16,7 @@ const COLUMNS = [
   'Age',
   'Gender',
 ];
-
+const VITE_API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '').trim();
 const normalizeParticipant = (item) => ({
   id: item?.id ?? item?._id ?? item?.uuid ?? `${item?.name ?? item?.email ?? 'participant'}`,
   firstName: item?.firstName ?? item?.first_name ?? '',
@@ -30,13 +31,29 @@ const normalizeParticipant = (item) => ({
     '',
   email: item?.email ?? item?.mail ?? '',
   source: resolveStringValue(
-    item?.source ?? item?.registrationSource ?? item?.origin ?? item?.referral ?? item?.registration?.source ?? item?.user?.source ?? '',
+    item?.source ??
+      item?.registrationSource ??
+      item?.origin ??
+      item?.referral ??
+      item?.registration?.source ??
+      item?.user?.source ??
+      ''
   ),
   couponCode: resolveStringValue(
-    item?.couponCode ?? item?.promoCode ?? item?.promo_code ?? item?.coupon_code ?? item?.promo?.code ?? item?.registration?.promoCode ?? item?.registration?.promo?.code ?? item?.coupon?.code ?? item?.meta?.couponCode ?? '',
+    item?.couponCode ??
+      item?.promoCode ??
+      item?.promo_code ??
+      item?.coupon_code ??
+      item?.promo?.code ??
+      item?.registration?.promoCode ??
+      item?.registration?.promo?.code ??
+      item?.coupon?.code ??
+      item?.meta?.couponCode ??
+      ''
   ),
   location: item?.location ?? item?.city ?? item?.country ?? '',
-  selectedTShirtSize: item?.selectedTShirtSize ?? item?.tShirtSize ?? item?.tshirtSize ?? item?.shirtSize ?? '',
+  selectedTShirtSize:
+    item?.selectedTShirtSize ?? item?.tShirtSize ?? item?.tshirtSize ?? item?.shirtSize ?? '',
   dob: item?.dob ?? item?.dateOfBirth ?? item?.birthDate ?? '',
   age: item?.age ?? '',
   gender: item?.gender ?? '',
@@ -89,6 +106,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
     hasNextPage: false,
     hasPreviousPage: false,
   });
+  const initialParticipantsRef = useRef(initialParticipants);
   const location = useLocation();
 
   useEffect(() => {
@@ -101,42 +119,104 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
           params: {
             eventId: eventId,
             page,
+            pageNo: page,
+            pageNumber: page,
+            currentPage: page,
             limit: ITEMS_PER_PAGE,
+            pageSize: ITEMS_PER_PAGE,
+            perPage: ITEMS_PER_PAGE,
             ...(search.trim() ? { search: search.trim() } : {}),
           },
         });
+console.log('============',response);
 
-        const payload = response?.data ?? response;
-          // Dev: log payload to inspect available fields (remove in production)
-          try {
-            console.debug('participant fetch payload:', payload);
-            if (Array.isArray(payload) ? payload.length > 0 : Array.isArray(payload?.data) && payload.data.length > 0) {
-              console.debug('first participant item:', (Array.isArray(payload) ? payload[0] : payload.data[0]));
-            }
-          } catch {
-            // ignore
+        // The `request` helper returns `response.data` (axios response.data).
+        // Some backends return `{ data: [...], meta: { ... } }` and some return
+        // `{ items: [...], pagination: { ... } }`. Avoid accidentally
+        // overwriting the top-level meta when `response.data` exists.
+        const looksLikeTopLevelMeta =
+          response && (response.meta || response.pagination || response.total || response.count || response.totalItems || response.totalCount);
+
+        const payload = looksLikeTopLevelMeta ? response : response?.data ?? response;
+        console.debug('participant fetch raw response:', response, '=> payload:', payload);
+        // Dev: log payload to inspect available fields (remove in production)
+        try {
+          console.debug('participant fetch payload:', payload);
+          if (
+            Array.isArray(payload)
+              ? payload.length > 0
+              : Array.isArray(payload?.data) && payload.data.length > 0
+          ) {
+            console.debug(
+              'first participant item:',
+              Array.isArray(payload) ? payload[0] : payload.data[0]
+            );
           }
+        } catch {
+          // ignore
+        }
         const data = Array.isArray(payload) ? payload : payload?.data || [];
-        const responseMeta = payload?.meta || {};
 
-        const normalized = data.map(normalizeParticipant);
-        setParticipants(normalized);
-        setMeta({
-          currentPage: responseMeta.currentPage ?? page,
-          totalPages: responseMeta.totalPages ?? 1,
-          totalItems: responseMeta.totalItems ?? data.length,
-          itemsPerPage: responseMeta.itemsPerPage ?? ITEMS_PER_PAGE,
-          hasNextPage: responseMeta.hasNextPage ?? page < (responseMeta.totalPages ?? 1),
-          hasPreviousPage: responseMeta.hasPreviousPage ?? page > 1,
-        });
+        // If backend returned a `meta` object, prefer it directly (map common keys)
+        if (payload && payload.meta) {
+          const m = payload.meta;
+          const totalItems = Number(m.totalItems ?? m.total ?? m.count ?? m.total_count ?? m.totalCount) || data.length;
+          const itemsPerPage =
+            Number(m.itemsPerPage ?? m.perPage ?? m.limit ?? m.pageSize ?? m.per_page) || ITEMS_PER_PAGE;
+          const totalPages = Number(m.totalPages ?? m.total_pages ?? m.pageCount ?? Math.ceil(totalItems / itemsPerPage)) || Math.max(1, Math.ceil(totalItems / itemsPerPage));
+          const currentPage = Number(m.currentPage ?? m.current_page ?? m.page) || page;
+          const hasNextPage = m.hasNextPage ?? m.has_next_page ?? (currentPage < totalPages);
+          const hasPreviousPage = m.hasPreviousPage ?? m.has_previous_page ?? currentPage > 1;
+
+          const normalized = data.map(normalizeParticipant);
+          setParticipants(normalized);
+          setMeta({
+            currentPage,
+            totalPages,
+            totalItems,
+            itemsPerPage,
+            hasNextPage,
+            hasPreviousPage,
+          });
+        } else {
+          // Fallback: infer pagination from other shapes
+          const paginationCandidates = {
+            totalItems: payload?.total ?? payload?.count ?? payload?.total_count ?? payload?.totalCount,
+            itemsPerPage: payload?.limit ?? payload?.per_page ?? payload?.pageSize ?? ITEMS_PER_PAGE,
+            totalPages: payload?.totalPages ?? payload?.pages ?? null,
+            currentPage: payload?.page ?? page,
+            hasNextPage: payload?.hasNextPage ?? null,
+            hasPreviousPage: payload?.hasPreviousPage ?? null,
+          };
+
+          const inferredTotalItems = Number(paginationCandidates.totalItems ?? null);
+          const inferredItemsPerPage = Number(paginationCandidates.itemsPerPage || ITEMS_PER_PAGE);
+          const inferredTotalPages =
+            Number(paginationCandidates.totalPages) ||
+            (inferredTotalItems > 0 ? Math.max(1, Math.ceil(inferredTotalItems / inferredItemsPerPage)) : Math.max(1, Math.ceil((data.length || 0) / inferredItemsPerPage)));
+
+          const normalized = data.map(normalizeParticipant);
+          setParticipants(normalized);
+
+          setMeta({
+            currentPage: Number(paginationCandidates.currentPage) || page,
+            totalPages: inferredTotalPages,
+            totalItems: inferredTotalItems || data.length,
+            itemsPerPage: inferredItemsPerPage,
+            hasNextPage:
+              paginationCandidates.hasNextPage ??
+              (inferredTotalItems ? page < Math.ceil(inferredTotalItems / inferredItemsPerPage) : normalized.length === inferredItemsPerPage),
+            hasPreviousPage: paginationCandidates.hasPreviousPage ?? page > 1,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch participants:', error);
-        const fallback = (initialParticipants || []).map(normalizeParticipant);
+        const fallback = (initialParticipantsRef.current || []).map(normalizeParticipant);
         setParticipants(fallback);
         setMeta({
           currentPage: 1,
           totalPages: 1,
-          totalItems: (initialParticipants || []).length,
+          totalItems: (initialParticipantsRef.current || []).length,
           itemsPerPage: ITEMS_PER_PAGE,
           hasNextPage: false,
           hasPreviousPage: false,
@@ -147,7 +227,21 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
     };
 
     fetchParticipants();
-  }, [initialParticipants, page, search, eventId, refreshKey]);
+  }, [page, search, eventId, refreshKey]);
+
+  const currentPage = Number(meta.currentPage) || page;
+  const totalPages = Math.max(
+    1,
+    Number(meta.totalPages) || Math.ceil((meta.totalItems || 0) / (meta.itemsPerPage || ITEMS_PER_PAGE)) || 1
+  );
+  const itemsPerPage = Number(meta.itemsPerPage) || ITEMS_PER_PAGE;
+  const pageStart = participants.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const pageEnd =
+    participants.length === 0
+      ? 0
+      : Math.min((currentPage - 1) * itemsPerPage + participants.length, meta.totalItems || 0);
+  const canGoPrevious = meta.hasPreviousPage ?? currentPage > 1;
+  const canGoNext = meta.hasNextPage ?? currentPage < totalPages;
 
   const handleDownloadCsv = async () => {
     try {
@@ -175,27 +269,45 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
       console.error('Failed to download CSV:', error);
     }
   };
-
   const handleDownloadExcel = async () => {
     try {
-      const params = {
-        ...Object.fromEntries(new URLSearchParams(location.search)),
-        eventId: eventId,
-        ...(search.trim() ? { search: search.trim() } : {}),
-      };
-      const response = await request({
-        method: 'GET',
-        url: '/api/v1/event-registration/export/excel',
-        params,
-      });
+      // console.log("=============>",params);
 
-      const blob = new Blob([response], {
+      const response = await fetch(
+        `${VITE_API_BASE_URL}/api/v1/event-registration/export/excel?eventId=${eventId}`,
+        {
+          method: 'GET',
+          headers: {},
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to download file from server');
+      }
+
+      const blob = await response.blob();
+      console.log('Downloaded blob size:', blob.size);
+      const excelBlob = new Blob([blob], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
-      const downloadUrl = window.URL.createObjectURL(blob);
+                    const computedMeta = {
+                      currentPage: Number(paginationCandidates.currentPage) || page,
+                      totalPages: inferredTotalPages ?? Math.max(1, Math.ceil((inferredTotalItems || data.length) / inferredItemsPerPage)),
+                      totalItems: inferredTotalItems || data.length,
+                      itemsPerPage: inferredItemsPerPage,
+                      hasNextPage:
+                        paginationCandidates.hasNextPage ??
+                        (inferredTotalItems ? page < Math.ceil(inferredTotalItems / inferredItemsPerPage) : normalized.length === inferredItemsPerPage),
+                      hasPreviousPage: paginationCandidates.hasPreviousPage ?? page > 1,
+                    };
+
+                    console.debug('Computed pagination (fallback):', computedMeta, 'payload.meta=', payload?.meta);
+                    setMeta(computedMeta);
+      const downloadUrl = window.URL.createObjectURL(excelBlob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = 'event-registration.xlsx';
+      link.download = `event-registration-${Date.now()}.xlsx`;
+
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -205,8 +317,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
     }
   };
 
-  const pageStart = (meta.currentPage - 1) * meta.itemsPerPage;
-  const pageEnd = pageStart + participants.length;
+  console.log('Participants:', meta);
 
   return (
     <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -284,25 +395,31 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-900 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Name</span>
                     <span className="max-w-[65%] wrap-break-word sm:max-w-none">
-                      {p.displayName || p.name || `${p.firstName} ${p.lastName}`.trim() || '-'}
+                      {p.displayName || p.name || `${p.firstName} ${p.lastName}`.trim() || 'N/A'}
                     </span>
                   </td>
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Email</span>
-                    <span className="max-w-[65%] break-all sm:max-w-none">{p.email || '-'}</span>
+                    <span className="max-w-[65%] break-all sm:max-w-none">{p.email || 'N/A'}</span>
                   </td>
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Source</span>
-                    <span className="max-w-[65%] wrap-break-word sm:max-w-none">{p.source || '-'}</span>
+                    <span className="max-w-[65%] wrap-break-word sm:max-w-none">
+                      {p.source || 'N/A'}
+                    </span>
                   </td>
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Coupon Code</span>
-                    <span className="max-w-[65%] break-all sm:max-w-none">{p.couponCode || '-'}</span>
+                    <span className="max-w-[65%] break-all sm:max-w-none">
+                      {p.couponCode || 'N/A'}
+                    </span>
                   </td>
-                  <td className="flex items-center justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-center text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 ">
-                    <span className="text-xs font-medium text-gray-400 sm:hidden">T-Shirt Size</span>
-                    <span className="w-full max-w-[65%] wrap-break-word sm:max-w-none text-center ">
-                      {p.selectedTShirtSize || '-'}
+                  <td className="flex items-center justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-center text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5">
+                    <span className="text-xs font-medium text-gray-400 sm:hidden">
+                      T-Shirt Size
+                    </span>
+                    <span className="w-full max-w-[65%] text-center wrap-break-word sm:max-w-none">
+                      {p.selectedTShirtSize || 'N/A'}
                     </span>
                   </td>
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
@@ -316,13 +433,13 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
                   <td className="flex items-start justify-between gap-3 border-b border-gray-50 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Age</span>
                     <span className="max-w-[65%] wrap-break-word sm:max-w-none">
-                      {p.age || '-'}
+                      {p.age || 'N/A'}
                     </span>
                   </td>
                   <td className="flex items-start justify-between gap-3 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:px-6 sm:py-5 sm:text-left">
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Gender</span>
                     <span className="max-w-[65%] wrap-break-word sm:max-w-none">
-                      {p.gender || '-'}
+                      {p.gender || 'N/A'}
                     </span>
                   </td>
                 </tr>
@@ -332,33 +449,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
         )}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="text-sm text-[#22C55E]">
-          Showing {participants.length === 0 ? 0 : pageStart + 1} to {pageEnd} of {meta.totalItems}{' '}
-          results
-        </p>
-        <div className="grid grid-cols-3 items-center gap-2 sm:flex">
-          <button
-            type="button"
-            disabled={!meta.hasPreviousPage || page === 1}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="rounded-xl border border-[#22C55E] px-3 py-1.5 text-sm font-medium text-[#22C55E] transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
-          >
-            Previous
-          </button>
-          <span className="min-w-20 text-center text-sm font-medium text-gray-700">
-            Page {meta.currentPage} of {meta.totalPages}
-          </span>
-          <button
-            type="button"
-            disabled={!meta.hasNextPage || page >= meta.totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded-xl border border-[#22C55E] px-3 py-1.5 text-sm font-medium text-[#22C55E] transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <ServerPagination meta={meta} onPageChange={(p) => setPage(Number(p) || 1)} />
     </div>
   );
 };
