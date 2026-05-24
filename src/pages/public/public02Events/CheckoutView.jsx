@@ -956,8 +956,7 @@ const CheckoutView = () => {
 
             <PayPalScriptProvider
               options={{
-                clientId:
-                  'ASJaaASdYQ7lB5tanw52Zq-h8EEc3FDxqtxahtWTttBAr4-Jlb9w3NfzI8Y7Uuvg0OQKYKDHeUaI2WOM',
+                clientId: PAYPAL_CLIENT_ID,
                 currency: 'USD',
               }}
             >

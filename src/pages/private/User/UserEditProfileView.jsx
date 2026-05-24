@@ -14,16 +14,19 @@ const UserEditProfileView = () => {
   const { changePassword } = usePassword();
   const [formData, setFormData] = useState({
     firstName: '',
-    lastName: '',
+    lastName: null,
     email: '',
-    phone: '',
-    address: '',
-    gender: '',
-    avatarUrl: '',
+    phone: null,
+    address: null,
+    gender: null,
+    avatarUrl: null,
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
+
+  // console.log("===================>",formData);
+  
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const fileInputRef = React.useRef(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -199,6 +202,9 @@ const UserEditProfileView = () => {
       ...(organizationName ? { organizationName } : {}),
     };
 
+
+    console.log("===================>",payload);
+    
     try {
       await updateProfile(payload);
       toast.success('Profile updated successfully');
