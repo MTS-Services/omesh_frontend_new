@@ -1,6 +1,21 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectUserRole } from '../../../../features/auth/selectors';
+import { ROLES, getDashboardPathByRole } from '../../../../utils/auth';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const userRole = useSelector(selectUserRole);
+
+  const handleOrganizeNow = () => {
+    if (userRole === ROLES.ORGANIZER) {
+      navigate(getDashboardPathByRole(userRole));
+      return;
+    }
+
+    navigate('/auth/register');
+  };
+
   return (
     <section
       className="relative min-h-[40vh] w-full overflow-hidden md:min-h-[60vh] lg:min-h-[80vh]"
@@ -35,12 +50,13 @@ const HeroSection = () => {
           >
             Browse Events
           </Link>
-          <Link
-            to="/events"
+          <button
+            type="button"
+            onClick={handleOrganizeNow}
             className="rounded-md border border-white bg-transparent px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:px-8 sm:py-3"
           >
             Organize an Event
-          </Link>
+          </button>
         </div>
       </div>
     </section>
