@@ -45,7 +45,7 @@ const OrgProfileView = () => {
     }));
   }, [user]);
 
-  console.log('User data:', user);  
+  // console.log('User data:', user);  
 
   const [showPasswords, setShowPasswords] = useState({
     current: false,

@@ -468,7 +468,7 @@ const CheckoutView = () => {
     }
 
     const applyPromoSuccessState = () => {
-      console.log('✅ applyPromoSuccessState called');
+      // console.log('✅ applyPromoSuccessState called');
       setPromoApplied(true);
       setAppliedPromoCode(code);
       setPromoCheckedCode(code);

@@ -203,7 +203,7 @@ const UserEditProfileView = () => {
     };
 
 
-    console.log("===================>",payload);
+    // console.log("===================>",payload);
     
     try {
       await updateProfile(payload);

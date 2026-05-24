@@ -39,7 +39,7 @@ const ApprovedEventsView = () => {
     [dateFilter, page, sortQuery, search]
   );
 
-  console.log('ApprovedEventsView Rendered with query:', query, dateFilter);
+  // console.log('ApprovedEventsView Rendered with query:', query, dateFilter);
 
   const { events, total, currentLimit, loading, error, deleteEvent } =
     useAdminRequestedEvents(query);

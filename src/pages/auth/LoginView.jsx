@@ -36,7 +36,7 @@ const LoginView = () => {
       const dashboardPath = getDashboardPathByRole(userRole);
       navigate(dashboardPath);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       const errorMessage =
         typeof err === 'string' ? err : err?.response?.data?.message || err?.message;
       toast.error(errorMessage || 'Invalid Credentials');

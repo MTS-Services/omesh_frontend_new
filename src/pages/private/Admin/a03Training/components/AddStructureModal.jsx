@@ -4,7 +4,7 @@ import Modal from '../../../../../components/common/Modal';
 import { toast } from 'react-toastify';
 
 const AddStructureModal = ({ onClose, onSave, plans, initialData }) => {
-  console.log('Initial data for AddStructureModal:', initialData);
+  // console.log('Initial data for AddStructureModal:', initialData);
 
   const [form, setForm] = useState(
     initialData

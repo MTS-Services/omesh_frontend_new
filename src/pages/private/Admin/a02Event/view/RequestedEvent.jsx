@@ -15,7 +15,7 @@ import FilterTableData from '../components/FilterTableData';
 import { useAdminRequestedEvents } from '../../../../../features/admin/requestedEvents/hooks';
 import { formatLocationWithCountry } from '../../../../../utils/eventUtils';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const getSortQuery = (sortBy) => {
   if (sortBy === 'name-asc') return { sortBy: 'title', sortOrder: 'asc' };

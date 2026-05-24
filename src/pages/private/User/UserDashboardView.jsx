@@ -10,26 +10,36 @@ import { handleApiError } from '../../../api/errorHandler';
 import { formatLocationWithCountry } from '../../../utils/eventUtils';
 import { resolveImageUrl } from '../../../utils/images';
 
+const getEventImageUrl = (event) => {
+  const firstImage = Array.isArray(event?.images)
+    ? event.images.find((item) => typeof item === 'string' ? item : item?.url)?.url || event.images[0]?.url || event.images[0]
+    : event?.images?.url || event?.images?.[0]?.url || event?.images?.[0];
+
+  return resolveImageUrl(
+    event?.image || event?.coverImageUrl || event?.thumbnail || firstImage || ''
+  );
+};
+
 const UserEventCard = ({ event }) => {
-  const imageUrl =
-    resolveImageUrl(
-      event?.image ||
-        event?.coverImageUrl ||
-        event?.images?.url ||
-        event?.images?.[0]?.url ||
-        event?.images?.[0] ||
-        ''
-    ) || '';
+  const imageUrl = getEventImageUrl(event);
 
   return (
     <article className="overflow-hidden rounded-lg bg-white ring-1 ring-gray-300 transition hover:ring-gray-200">
       <div className="flex h-full flex-col">
         <div className="relative h-20 w-full shrink-0 sm:h-40">
-          <img src={imageUrl ||'/img/home/premium.avif'} alt={event.title} className="h-full w-full object-cover" />
+          <img
+            src={imageUrl || '/img/home/premium.avif'}
+            alt={event.title}
+            onError={(e) => {
+              if (e.currentTarget.src.includes('/img/home/premium.avif')) return;
+              e.currentTarget.src = '/img/home/premium.avif';
+            }}
+            className="h-full w-full object-cover"
+          />
         </div>
 
         <div className="flex grow flex-col p-2 sm:p-3">
-          <h3 className="mb-1.5 line-clamp-2 text-sm font-bold text-gray-900 sm:mb-2 sm:text-lg md:text-2xl">
+          <h3 className="mb-1.5 line-clamp-2 text-sm font-bold text-gray-900 sm:mb-2 sm:text-lg md:text-xl">
             {event.title}
           </h3>
 
@@ -92,17 +102,9 @@ const mapUpcomingEvent = (event) => ({
     : '',
   location: event?.location ?? '',
   country: event?.country ?? event?.flag ?? '',
-    image:
-      resolveImageUrl(
-        event?.coverImageUrl ||
-          event?.image ||
-          event?.thumbnail ||
-          event?.images?.url ||
-          event?.images?.[0]?.url ||
-          event?.images?.[0] ||
-          ''
-      ) || '',
+  image: getEventImageUrl(event),
 });
+
 
 const extractEvents = (payload, key) => {
   const collection = payload?.data?.[key];
