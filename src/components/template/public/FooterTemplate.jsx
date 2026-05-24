@@ -76,7 +76,7 @@ const FooterTemplate = () => {
                 </a>
               </li>
               <li></li>
-              <li className="pt-1">Phone: 098 75643 65</li>
+              <li className="pt-1">Co tact: +1868 4722526</li>
             </ul>
           </div>
 

@@ -68,17 +68,17 @@ const TrainingPlans = () => {
           <div className="relative h-[10vh] flex-1 overflow-hidden rounded-xl shadow md:h-95 md:flex-[0.6] md:scale-105">
             <img src="img/home/t-2.jpg" className="h-full w-full " />
 
-            <div className="absolute bottom-0 flex h-[10 vh] w-full flex-col justify-start  bg-white/20 p-2 backdrop-blur-md sm:h-[20vh] md:h-[24vh]  md:p-4 lg:h-[20vh]">
+            <div className="absolute bottom-0 flex h-[10 vh] w-full flex-col justify-start  bg-white/20 p-2 backdrop-blur-md sm:h-[22vh]   md:p-4 lg:h-[25vh]">
               <h2 className="text-lg font-semibold text-white md:text-2xl md:leading-snug">
                 Running Training Plan
               </h2>
-              <p className="mt-1 text-sm text-white/80 md:mt-2 md:text-lg">
+              <p className="mt-2 text-sm text-white/80 md:mt-auto md:text-lg">
                 Improve endurance with our expert-approved schedule.
               </p>
 
               <Link
                 to="/training-plans"
-                className="rounded-lg bg-green-500 py-2.5 pb-2 text-center text-sm font-medium text-white mt-2 hover:bg-green-600 md:text-base"
+                className="rounded-lg mt-auto bg-green-500 py-2.5 pb-2 text-center text-sm font-medium text-white  hover:bg-green-600 md:text-base"
               >
                 View Plan
               </Link>
