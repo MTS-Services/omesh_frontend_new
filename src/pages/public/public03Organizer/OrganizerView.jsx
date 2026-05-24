@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Modal from '../../../components/common/Modal';
@@ -8,11 +8,7 @@ import { ROLES, getDashboardPathByRole } from '../../../utils/auth';
 const OrganizerView = () => {
   const navigate = useNavigate();
   const userRole = useSelector(selectUserRole);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    setModalOpen(true);
-  }, []);
+  const [modalOpen, setModalOpen] = useState(true);
 
   const handleRegisterNow = () => {
     setModalOpen(false);
@@ -21,7 +17,7 @@ const OrganizerView = () => {
       return;
     }
 
-    navigate('/auth/register');
+    navigate('/auth/register', { state: { role: 'ORGANIZER' } });
   };
 
   const handleHome = () => {

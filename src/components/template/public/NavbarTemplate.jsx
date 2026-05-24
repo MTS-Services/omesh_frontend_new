@@ -50,7 +50,8 @@ const AuthButton = ({ dashConfig, mobile = false, onClose }) => {
       </Link>
 
       <Link
-        to="/auth/login"
+        to="/auth/register"
+        state={{ role: 'ORGANIZER' }}
         onClick={onClose}
         className={`rounded-md bg-[#4ade80] font-semibold text-black transition-colors hover:bg-[#22c55e] ${
           mobile ? 'block w-full px-5 py-3 text-center text-base' : 'px-4 py-2 text-sm'

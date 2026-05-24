@@ -13,7 +13,7 @@ const HeroSection = () => {
       return;
     }
 
-    navigate('/auth/register');
+    navigate('/auth/register', { state: { role: 'ORGANIZER' } });
   };
 
   return (

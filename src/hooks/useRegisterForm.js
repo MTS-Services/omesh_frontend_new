@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import { useRegister } from '../features/auth/hooks';
@@ -17,18 +17,26 @@ import {
  */
 export const useRegisterForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, loading, error } = useRegister();
 
+  const initialRole = location.state?.role === 'ORGANIZER' ? 'ORGANIZER' : 'USER';
+
+  const createInitialFormData = useCallback(
+    () => ({
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      password: '',
+      confirmPassword: '',
+      role: initialRole,
+      termsAccepted: false,
+    }),
+    [initialRole]
+  );
+
   // Form state
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
-    role: 'USER',
-    termsAccepted: false,
-  });
+  const [formData, setFormData] = useState(createInitialFormData);
 
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -157,20 +165,12 @@ export const useRegisterForm = () => {
    * Reset form to initial state
    */
   const resetForm = useCallback(() => {
-    setFormData({
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      password: '',
-      confirmPassword: '',
-      role: 'USER',
-      termsAccepted: false,
-    });
+    setFormData(createInitialFormData());
     setProfilePhoto(null);
     setValidationErrors({});
     setApiError(null);
     setShowPassword(false);
-  }, []);
+  }, [createInitialFormData]);
 
   return {
     // Form state
