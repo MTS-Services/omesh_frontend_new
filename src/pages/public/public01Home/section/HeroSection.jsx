@@ -36,7 +36,7 @@ const HeroSection = () => {
             Browse Events
           </Link>
           <Link
-            to="/auth/login"
+            to="/events"
             className="rounded-md border border-white bg-transparent px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:px-8 sm:py-3"
           >
             Organize an Event
