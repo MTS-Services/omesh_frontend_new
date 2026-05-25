@@ -86,7 +86,7 @@ const ParticipantList = () => {
             ) : (
               <Download size={14} />
             )}
-            <span>{showLoading === 'xlsx' && isExporting ? 'Exporting...' : 'Download CSV'}</span>
+            <span>{showLoading === 'xlsx' && isExporting ? 'Exporting...' : 'Download Execl'}</span>
           </button>
         </div>
       </div>

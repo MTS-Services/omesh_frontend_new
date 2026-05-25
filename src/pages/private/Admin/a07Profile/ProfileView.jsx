@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth, usePassword, useProfile } from '../../../../features/auth/hooks';
+import { validatePassword } from '../../../../utils/registerValidation';
 
 const ProfileView = () => {
   const { user } = useAuth();
@@ -51,6 +52,20 @@ const ProfileView = () => {
     return Number.isNaN(Date.parse(trimmed)) ? undefined : trimmed;
   };
 
+  const getApiErrorMessage = (error, fallbackMessage) => {
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.response?.data?.errors?.[0]?.message ||
+      error?.message ||
+      fallbackMessage
+    );
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast.error('Profile data not available');
@@ -59,20 +74,23 @@ const ProfileView = () => {
 
     const dateOfBirth = normalizeDate(user.dateOfBirth);
     const organizationName = normalizeText(user.organizationName);
+    const fullName = normalizeText(user.fullName) || undefined;
+    const emailValue = normalizeText(email) || user.email;
+    const phoneValue = normalizePhone(phone) || user.phone || null;
 
     const payload = {
-      fullName: user.fullName || '',
-      email: normalizeText(email) || user.email,
-      phone: normalizePhone(phone) || user.phone || null,
-      avatarUrl: user.avatarUrl ?? null,
-      role: user.role ?? null,
-      status: user.status ?? null,
-      emailVerified: user.emailVerified ?? false,
-      gender: user.gender ?? null,
-      location: user.location ?? null,
-      teamClub: user.teamClub ?? null,
-      joinedAt: user.joinedAt ?? null,
-      lastLoginAt: user.lastLoginAt ?? null,
+      ...(fullName ? { fullName } : {}),
+      ...(emailValue ? { email: emailValue } : {}),
+      ...(phoneValue ? { phone: phoneValue } : {}),
+      ...(user.avatarUrl ? { avatarUrl: user.avatarUrl } : {}),
+      ...(user.role ? { role: user.role } : {}),
+      ...(user.status ? { status: user.status } : {}),
+      ...(typeof user.emailVerified === 'boolean' ? { emailVerified: user.emailVerified } : {}),
+      ...(user.gender ? { gender: user.gender } : {}),
+      ...(user.location ? { location: user.location } : {}),
+      ...(user.teamClub ? { teamClub: user.teamClub } : {}),
+      ...(user.joinedAt ? { joinedAt: user.joinedAt } : {}),
+      ...(user.lastLoginAt ? { lastLoginAt: user.lastLoginAt } : {}),
       ...(dateOfBirth ? { dateOfBirth } : {}),
       ...(organizationName ? { organizationName } : {}),
     };
@@ -80,8 +98,8 @@ const ProfileView = () => {
     try {
       await updateProfile(payload);
       toast.success('Profile updated successfully');
-    } catch {
-      toast.error('Profile update failed');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Profile update failed'));
     }
   };
 
@@ -100,6 +118,12 @@ const ProfileView = () => {
       return;
     }
 
+    const passwordError = validatePassword(trimmedNew);
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
+
     try {
       setIsChangingPassword(true);
       await changePassword({
@@ -112,11 +136,7 @@ const ProfileView = () => {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      const message =
-        typeof error === 'string'
-          ? error
-          : error?.response?.data?.message || error?.message;
-      toast.error(message || 'Password update failed');
+      toast.error(getApiErrorMessage(error, 'Password update failed'));
     } finally {
       setIsChangingPassword(false);
     }
