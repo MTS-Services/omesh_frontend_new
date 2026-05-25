@@ -795,15 +795,18 @@ const EventCreateView = () => {
                   placeholder="Number Of seats"
                   className={inputCls}
                   min={0}
+                  step={1}
                 />
               </Field>
               <Field label="Distance" icon={Ruler}>
                 <input
-                  type="text"
+                  type="number"
                   value={form.distance}
                   onChange={set('distance')}
                   placeholder="Distance (km)"
                   className={inputCls}
+                  min={0}
+                  step="any"
                 />
               </Field>
               <Field label="Ticket Price" icon={DollarSign}>
@@ -814,6 +817,7 @@ const EventCreateView = () => {
                   placeholder="Enter price ($)"
                   className={inputCls}
                   min={0}
+                  step="any"
                 />
               </Field>
             </div>
