@@ -10,6 +10,9 @@ const initialState = {
   total: 0,
   page: 1,
   limit: 10,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
   status: 'idle', // idle | loading | succeeded | failed
   error: null,
   actionLoading: {}, // { [eventId]: true }
@@ -27,10 +30,29 @@ const extractList = (payload) => {
 
 const extractMeta = (payload) => {
   const root = payload?.data ?? payload;
+  const meta = root?.meta ?? payload?.meta ?? {};
+  const items = extractList(payload);
+
+  const total = Number(
+    meta?.totalItems ??
+      meta?.total ??
+      root?.totalItems ??
+      root?.total ??
+      root?.count ??
+      items.length ??
+      0
+  );
+  const limit = Number(meta?.itemsPerPage ?? meta?.limit ?? root?.limit ?? 10);
+  const page = Number(meta?.currentPage ?? meta?.page ?? root?.page ?? 1);
+  const computedTotalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
+
   return {
-    total: Number(root?.total ?? root?.count ?? extractList(payload).length ?? 0),
-    page: Number(root?.page ?? 1),
-    limit: Number(root?.limit ?? 10),
+    total,
+    page,
+    limit,
+    totalPages: Number(meta?.totalPages ?? root?.totalPages ?? computedTotalPages),
+    hasNextPage: Boolean(meta?.hasNextPage ?? root?.hasNextPage),
+    hasPreviousPage: Boolean(meta?.hasPreviousPage ?? root?.hasPreviousPage),
   };
 };
 
@@ -49,8 +71,11 @@ const requestedEventsSlice = createSlice({
         state.items = extractList(action.payload);
         const meta = extractMeta(action.payload);
         state.total = meta.total;
-        state.page = meta.page;
-        state.limit = meta.limit;
+        state.page = meta.page || Number(action.meta.arg?.page) || 1;
+        state.limit = meta.limit || Number(action.meta.arg?.limit) || state.limit || 10;
+        state.totalPages = meta.totalPages;
+        state.hasNextPage = meta.hasNextPage;
+        state.hasPreviousPage = meta.hasPreviousPage;
       })
       .addCase(fetchAdminRequestedEvents.rejected, (state, action) => {
         if (action.meta.aborted) {

@@ -6,6 +6,7 @@ import DeleteEventModal from '../components/DeleteEventModal';
 import { useAdminRequestedEvents } from '../../../../../features/admin/requestedEvents/hooks';
 import { toast } from 'react-toastify';
 import { formatLocationWithCountry } from '../../../../../utils/eventUtils';
+import ServerPagination from '../../../../../components/ui/navigation/ServerPagination';
 
 const ITEMS_PER_PAGE = 10;
 const getSortQuery = (sortBy) => {
@@ -94,8 +95,14 @@ const ApprovedEventsView = () => {
   const limit = currentLimit || ITEMS_PER_PAGE;
   const displayedTotal = Math.max(0, total || 0);
   const totalPages = Math.max(1, Math.ceil(displayedTotal / limit));
-  const start = displayedTotal === 0 ? 0 : (page - 1) * limit + 1;
-  const end = displayedTotal === 0 ? 0 : Math.min(page * limit, displayedTotal);
+  const paginationMeta = {
+    currentPage: page,
+    totalPages,
+    itemsPerPage: limit,
+    totalItems: displayedTotal,
+    hasPreviousPage: page > 1,
+    hasNextPage: page < totalPages,
+  };
 
   return (
     <div className="mt-4 rounded-lg border border-gray-100 bg-white shadow-sm md:mt-6">
@@ -240,27 +247,7 @@ const ApprovedEventsView = () => {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-        <p className="text-sm text-green-600">
-          Showing {start} to {end} of {displayedTotal} results
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="rounded-lg border border-gray-200 px-4 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="rounded-lg border border-gray-200 px-4 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <ServerPagination meta={paginationMeta} onPageChange={setPage} />
 
       <DeleteEventModal
         isOpen={isDeleteOpen}
