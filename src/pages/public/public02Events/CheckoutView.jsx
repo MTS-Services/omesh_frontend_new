@@ -48,6 +48,12 @@ const CheckoutView = () => {
   const event = state?.event ?? null;
   const quantity = state?.quantity ?? 1;
 
+  const getPaymentFailureState = (reason) => ({
+    eventName: event?.title || event?.eventName || event?.name || 'your event',
+    quantity,
+    reason,
+  });
+
   const [participants, setParticipants] = useState(() =>
     Array.from({ length: quantity }, emptyParticipant)
   );
@@ -430,10 +436,20 @@ const CheckoutView = () => {
       setAppliedPromoCode('');
       setPromoCheckedCode('');
       setPaypalOpen(false);
-      navigate('/', { replace: true });
+      navigate('/events/payment-success', {
+        replace: true,
+        state: {
+          eventName: event?.title || event?.eventName || event?.name || 'your event',
+          quantity,
+        },
+      });
     } catch (error) {
       const message = getErrorMessage(error, 'Capture failed');
       toast.error(message);
+      navigate('/events/payment-failed', {
+        replace: true,
+        state: getPaymentFailureState(message),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -442,6 +458,10 @@ const CheckoutView = () => {
   const handlePayPalError = (error) => {
     const message = error?.message || 'Checkout failed';
     toast.error(message);
+    navigate('/events/payment-failed', {
+      replace: true,
+      state: getPaymentFailureState(message),
+    });
   };
 
   const handleApplyPromoCode = async () => {
@@ -543,6 +563,8 @@ const CheckoutView = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     const normalizedCode = promoCode.trim().toUpperCase();
     const normalizedApplied = appliedPromoCode.trim().toUpperCase();
     const normalizedChecked = promoCheckedCode.trim().toUpperCase();
@@ -574,7 +596,13 @@ const CheckoutView = () => {
         setPaypalOrderId('');
         setParticipants(Array.from({ length: quantity }, emptyParticipant));
         setPromoCheckedCode('');
-        navigate('/', { replace: true });
+        navigate('/events/payment-success', {
+          replace: true,
+          state: {
+            eventName: event?.title || event?.eventName || event?.name || 'your event',
+            quantity,
+          },
+        });
         return;
       } catch (error) {
         const message = getErrorMessage(error, 'Submit failed');
@@ -584,9 +612,29 @@ const CheckoutView = () => {
       }
       return;
     }
+    // setPaypalOpen(true);
+    try {
+      const response = await request({
+        method: 'POST',
+        url: ENDPOINT.PUBLIC.EVENTS.REGISTRATION2,
+        data: buildRegistrationPayload(),
+      });
 
-    console.log('All participants valid, proceeding to PayPal flow');
-    setPaypalOpen(true);
+      if (response?.data?.paymentUrl) {
+        setIsSubmitting(false);
+        window.location.href = response.data.paymentUrl;
+        return;
+      }
+    } catch (error) {
+      const message = getErrorMessage(error, 'Unable to initiate payment');
+      toast.error(message);
+      navigate('/events/payment-failed', {
+        replace: true,
+        state: getPaymentFailureState(message),
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     // try {
     //   if (paypalOrderId) {

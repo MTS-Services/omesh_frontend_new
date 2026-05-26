@@ -35,6 +35,7 @@ export const ENDPOINT = {
       DETAILS_API: '/api/v1/events',
 
       REGISTRATION: '/api/v1/event-registration',
+      REGISTRATION2: '/api/v1/event-registration/fygaro-payment',
     },
     PAYMENT: {
       CAPTURE: '/api/v1/payment/capture',

@@ -12,11 +12,17 @@ const TrainingDetailsView = lazy(
 const AboutView = lazy(() => import('../../pages/public/public05About/AboutView'));
 const FaqView = lazy(() => import('../../pages/public/public06FAQ/FaqView'));
 const TermsView = lazy(() => import('../../pages/public/Terms'));
+const PaymentSuccess = lazy(() => import('../../pages/public/payment/PaymentSuccess'));
+const PaymentFailed = lazy(() => import('../../pages/public/payment/PaymentFailed'));
 
 export const publicRoutes = [
   { path: '', element: <HomeView /> },
   { path: 'events', element: <EventsView /> },
   { path: 'events/checkout', element: <CheckoutView /> },
+  { path: 'payment-success', element: <PaymentSuccess /> },
+  { path: 'events/payment-success', element: <PaymentSuccess /> },
+  { path: 'payment-failed', element: <PaymentFailed /> },
+  { path: 'events/payment-failed', element: <PaymentFailed /> },
   { path: 'events/:id', element: <DetailsView /> },
   { path: 'about', element: <AboutView /> },
   { path: 'organizer-toolkit', element: <OrganizerView /> },
