@@ -155,7 +155,7 @@ const TrainingView = () => {
                 className="flex flex-col items-center rounded-lg border border-gray-200 bg-gray-50 p-8 text-center transition-shadow hover:shadow-md"
               >
                 <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">
-                  {cat.durationMin} Min
+                  {cat.durationMin} 
                 </h3>
                 <p className="mb-6 text-sm leading-relaxed text-gray-700 md:text-base">
                   {cat.description}

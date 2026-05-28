@@ -23,7 +23,7 @@ const AddStructureModal = ({ onClose, onSave, plans, initialData }) => {
     if (form.weeks.length === 0) return toast.error('Please add at least one week');
 
     const ok = await onSave({
-      minutes: Number(form.minutes),
+      minutes: form.minutes,
       description: form.description,
       trainingPlan: form.trainingPlan,
       weeks: form.weeks,
@@ -65,7 +65,7 @@ const AddStructureModal = ({ onClose, onSave, plans, initialData }) => {
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">Workout minutes</label>
           <input
-            type="number"
+            type="text"
             value={form.minutes}
             onChange={(e) => setForm((f) => ({ ...f, minutes: e.target.value }))}
             placeholder="32 minutes"

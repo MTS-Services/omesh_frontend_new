@@ -82,7 +82,7 @@ const TrainingPlanView = () => {
 
   const toStructurePayload = ({ minutes, description, weeks, categoryId }) => ({
     categoryId,
-    durationMin: Number(minutes),
+    durationMin: minutes,
     title: description,
     description,
     isActive: true,
@@ -123,7 +123,6 @@ const TrainingPlanView = () => {
       toast.error('Unable to resolve category for update');
       return false;
     }
-
 
     try {
       await updateStructure(

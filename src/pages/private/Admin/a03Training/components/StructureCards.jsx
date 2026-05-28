@@ -26,7 +26,7 @@ const StructureCards = ({ structures, onAdd, onEdit, onDelete }) => {
           >
             <p className="mb-3 text-3xl font-bold text-gray-900">
               {s.minutes}
-              <span className="ml-1 text-base font-semibold text-gray-900">Min</span>
+              {/* <span className="ml-1 text-base font-semibold text-gray-900">Min</span> */}
             </p>
             <p className="mb-5 text-sm leading-relaxed text-gray-500">{s.description}</p>
             <div className="flex gap-2">
