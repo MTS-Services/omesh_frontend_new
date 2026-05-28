@@ -8,7 +8,8 @@ import { useTraining, useTrainingStructures } from '../../../../features/admin/t
 import { toast } from 'react-toastify';
 
 const TrainingPlanView = () => {
-  const { plans, planMap, createPlan, deletePlan, loading, error } = useTraining();
+  const { plans, planMap, rawPlans, createPlan, deletePlan, loading, error } = useTraining();
+
   const {
     structures,
     createStructure,
@@ -123,6 +124,7 @@ const TrainingPlanView = () => {
       return false;
     }
 
+
     try {
       await updateStructure(
         editingStructure.id,
@@ -212,6 +214,7 @@ const TrainingPlanView = () => {
           initialData={editingStructure}
           onClose={closeStructureModal}
           onSave={editingStructure ? handleEditStructure : handleAddStructure}
+          rawPlans={rawPlans}
         />
       )}
     </div>

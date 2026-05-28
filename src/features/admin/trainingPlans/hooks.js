@@ -61,7 +61,6 @@ export const useTraining = () => {
   const rawPlans = useSelector((state) => state.training.items);
   const status = useSelector((state) => state.training.status);
   const error = useSelector((state) => state.training.error);
-
   const plans = toArray(rawPlans).map(getPlanName).filter(Boolean);
   const planMap = toArray(rawPlans).reduce((acc, item) => {
     const name = getPlanName(item);
@@ -85,6 +84,7 @@ export const useTraining = () => {
   return {
     plans,
     planMap,
+    rawPlans,
     loading: status === 'loading',
     error,
     createPlan,
