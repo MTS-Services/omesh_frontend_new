@@ -181,7 +181,7 @@ const TrainingDetailsView = () => {
                         {(weekData.days ?? []).map((day, dayIndex) => (
                           <td
                             key={dayIndex}
-                            className="border border-gray-200 px-4 py-3 text-sm text-gray-700"
+                            className="border border-gray-200 px-4 py-3 text-sm text-gray-700 whitespace-pre-wrap"
                           >
                             {day}
                           </td>
