@@ -130,7 +130,7 @@ const AddStructureModal = ({ onClose, onSave, plans, initialData }) => {
                   <div key={day.id} className="mb-3">
                     <p className="mb-1 text-sm font-medium text-green-600">Day {di + 1}</p>
                     <p className="mb-1 text-xs text-gray-500">Activity</p>
-                    <input
+                    <textarea
                       type="text"
                       value={day.activity}
                       onChange={(e) => updateActivity(wi, di, e.target.value)}
