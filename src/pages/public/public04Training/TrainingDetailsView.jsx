@@ -79,16 +79,16 @@ const TrainingDetailsView = () => {
     <section className="bg-white px-4 py-10 sm:px-6 md:py-16 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
+        <div className="mb-8 flex items-start flex-col md:flex-row md:items-center justify-between">
+          <div className="mb-4 md:mb-0">
             <h1 className="mb-2 text-2xl text-gray-900 md:text-3xl lg:text-5xl">Training Plans</h1>
             <p className="text-base text-gray-700">{selectedPlan?.title}</p>
           </div>
-          <div>
+          <div className="w-full md:w-auto">
             <button
               onClick={handleJoinNow}
               disabled={isJoining}
-              className="rounded-md bg-green-500 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600 md:text-base"
+              className="rounded-md w-full bg-green-500 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600 md:text-base"
             >
               {isJoining ? 'Joining...' : 'Join Now'}
             </button>
@@ -142,7 +142,7 @@ const TrainingDetailsView = () => {
                         <span className="min-w-[50px] font-medium text-gray-700">
                           Day {dayIndex + 1}:
                         </span>
-                        <span className="text-gray-600">{day}</span>
+                        <span className="text-gray-600 wrap-break-word whitespace-pre-wrap">{day}</span>
                       </div>
                     ))}
                   </div>
@@ -181,7 +181,7 @@ const TrainingDetailsView = () => {
                         {(weekData.days ?? []).map((day, dayIndex) => (
                           <td
                             key={dayIndex}
-                            className="border border-gray-200 px-4 py-3 text-sm text-gray-700 whitespace-pre-wrap"
+                            className="border border-gray-200 px-4 py-3 text-sm wrap-break-word whitespace-pre-wrap text-gray-700"
                           >
                             {day}
                           </td>
@@ -239,7 +239,7 @@ const TrainingDetailsView = () => {
                     {weekData.days.map((day, dayIndex) => (
                       <td
                         key={dayIndex}
-                        className="border border-gray-200 px-4 py-3 text-sm text-gray-700"
+                        className="border border-gray-200 px-4 py-3 text-sm wrap-break-word whitespace-pre-wrap text-gray-700"
                       >
                         {day}
                       </td>
