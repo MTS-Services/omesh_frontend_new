@@ -109,27 +109,42 @@ const privacyData = [
   },
 ];
 
+const refundPoints = [
+  "Endura Events acts solely as a registration platform. Refund decisions are made by the event organizer in accordance with the organizer's refund policy.",
+  'Endura Events is not responsible for issuing refunds unless expressly agreed in writing.',
+  'Any fees paid directly to Endura Events for platform services are non-refundable.',
+  'Payment processing fees charged by third-party providers are non-refundable.',
+];
+
 const PolicyItem = ({ index, title, body, isContact }) => (
-  <div className="flex gap-2 md:gap-4 py-5 border-b border-gray-100 last:border-b-0 items-start">
-    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-base  font-semibold text-green-700 mt-0.5">
+  <div className="flex items-start gap-3 border-b border-gray-100 py-5 last:border-b-0 md:gap-4 md:py-6">
+    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50 text-base font-semibold text-green-700">
       {index}
     </div>
-    <div>
-      <p className="text-base md:text-lg font- text-gray-800 mb-1">{title}</p>
+    <div className="min-w-0">
+      <p className="mb-1.5 text-base leading-snug font-semibold text-gray-800 md:text-lg">
+        {title}
+      </p>
       {isContact ? (
-        <p className="text-sm md:text-base text-gray-500 leading-relaxed">
+        <p className="text-sm leading-relaxed text-gray-500 md:text-base">
           For inquiries, contact{' '}
-          <a href="mailto:support@enduraevents.com" className="text-green-600 font-medium hover:underline">
+          <a
+            href="mailto:support@enduraevents.com"
+            className="font-medium text-green-600 hover:underline"
+          >
             support@enduraevents.com
           </a>{' '}
           or visit{' '}
-          <a href="https://www.enduraevents.com" className="text-green-600 font-medium hover:underline">
+          <a
+            href="https://www.enduraevents.com"
+            className="font-medium text-green-600 hover:underline"
+          >
             www.enduraevents.com
           </a>
           .
         </p>
       ) : (
-        <p className="text-sm md:text-base text-gray-500 leading-relaxed">{body}</p>
+        <p className="text-sm leading-relaxed text-gray-500 md:text-base">{body}</p>
       )}
     </div>
   </div>
@@ -137,14 +152,21 @@ const PolicyItem = ({ index, title, body, isContact }) => (
 
 const Terms = () => {
   const [activeTab, setActiveTab] = useState('terms');
+  const tabs = [
+    { key: 'terms', label: 'Terms & Conditions' },
+    { key: 'privacy', label: 'Privacy Policy' },
+    { key: 'refund', label: 'Refund Policy' },
+  ];
+
+  const selectedData =
+    activeTab === 'terms' ? termsData : activeTab === 'privacy' ? privacyData : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen bg-linear-to-b from-emerald-50 via-white to-white px-3 py-6 sm:px-4 md:py-10">
       <div className="mx-auto w-full max-w-7xl">
-
         {/* Hero */}
         <div
-          className="rounded-2xl p-8 mb-6 relative overflow-hidden"
+          className="relative mb-5 overflow-hidden rounded-2xl p-5 shadow-sm sm:p-7 md:mb-7 md:rounded-3xl md:p-10"
           style={{ background: 'linear-gradient(135deg, #1a6b3a 0%, #2d9d5c 60%, #3dbd72 100%)' }}
         >
           {/* Decorative circles */}
@@ -170,20 +192,24 @@ const Terms = () => {
           />
 
           <div className="relative">
-            <p className="text-sm font-semibold  text-green-200 uppercase mb-2">
+            <p className="mb-2 text-xs font-semibold tracking-wide text-green-200 uppercase sm:text-sm">
               Endura Sports Limited
             </p>
             <h1
-              className="text-white mb-1"
-              style={{ fontFamily: 'Georgia, serif', fontSize: '2.2rem', lineHeight: 1.1 }}
+              className="mb-2 text-white"
+              style={{
+                fontFamily: 'Georgia, serif',
+                fontSize: 'clamp(1.8rem, 5vw, 2.6rem)',
+                lineHeight: 1.08,
+              }}
             >
               Terms &amp; Privacy
             </h1>
-            <p className="text-sm text-green-200 mt-1">Last updated: May 20, 2026</p>
+            <p className="mt-1 text-xs text-green-200 sm:text-sm">Last updated: June 6, 2026</p>
 
             <Link
               to="/"
-              className="inline-flex items-center gap-2 mt-5 text-sm font-medium text-white/85 px-4 py-2 rounded-full border border-white/25 hover:bg-white/10 transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3.5 py-2 text-xs font-medium text-white/90 transition-colors hover:bg-white/10 sm:px-4 sm:text-sm md:mt-5"
             >
               ← Back to Home
             </Link>
@@ -196,38 +222,49 @@ const Terms = () => {
         </div> */}
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm md:rounded-3xl">
           {/* Tabs */}
-          <div className="flex border-b border-gray-100">
-            {['terms', 'privacy'].map((tab) => (
+          <div className="grid grid-cols-1 border-b border-gray-100 bg-gray-50/60 sm:grid-cols-3">
+            {tabs.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-4 text-base md:text-lg font-semibold transition-colors ${
-                  activeTab === tab
-                    ? 'text-green-700 border-b-2 border-green-600 bg-green-50/60'
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`py-3.5 text-sm font-semibold transition-colors sm:text-base md:py-4 md:text-lg ${
+                  activeTab === tab.key
+                    ? 'border-b-2 border-green-600 bg-green-50/60 text-green-700'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                {tab === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'}
+                {tab.label}
               </button>
             ))}
           </div>
 
           {/* Content */}
-          <div className="px-4 md:px-6 py-2">
-            {activeTab === 'terms'
-              ? termsData.map((item, i) => (
-                  <PolicyItem key={i} index={i + 1} {...item} />
-                ))
-              : privacyData.map((item, i) => (
-                  <PolicyItem key={i} index={i + 1} {...item} />
+          <div className="px-3 py-2 sm:px-4 md:px-6 md:py-3">
+            {activeTab === 'refund' ? (
+              <div>
+                {refundPoints.map((point, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 border-b border-gray-100 py-5 last:border-b-0 md:gap-4 md:py-6"
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50 text-base font-semibold text-green-700">
+                      {idx + 1}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm leading-relaxed text-gray-500 md:text-base">{point}</p>
+                    </div>
+                  </div>
                 ))}
+              </div>
+            ) : (
+              selectedData.map((item, i) => <PolicyItem key={i} index={i + 1} {...item} />)
+            )}
           </div>
 
           {/* Footer */}
-          <div className="px-4 md:px-6 py-4 border-t border-gray-100 text-center text-sm text-gray-400">
+          <div className="border-t border-gray-100 px-4 py-4 text-center text-xs text-gray-400 sm:text-sm md:px-6">
             © Endura Sports Limited — All rights reserved.
           </div>
         </div>
