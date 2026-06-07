@@ -41,7 +41,7 @@ const FooterTemplate = () => {
             </div>
 
             <p className="text-sm leading-relaxed text-gray-300">
-              Join, compete, and explore exciting sports events near you with ease.
+              Endura Events is a trading name of Endura Sports Limited
             </p>
           </div>
 

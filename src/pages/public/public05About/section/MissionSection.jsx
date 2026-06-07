@@ -4,14 +4,38 @@ const MissionSection = () => {
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 items-center gap-14 md:gap-32 lg:grid-cols-2">
           {/* Left Content */}
-          <div className="space-y-0 md:space-y-6">
+          <div className="space-y-0 md:space-y-5">
             <h2 className="mb-2 text-2xl text-gray-900 md:text-3xl lg:text-5xl">
               Our <span className="text-green-500">Mission</span>
             </h2>
-            <p className="text-sm text-gray-500 md:text-base lg:text-lg">
-              Our mission is to make sports event participation simple, accessible, and enjoyable
-              for everyone. We aim to connect athletes, organizers, and communities through a
-              powerful and user-friendly platform.
+            <p className="text-sm text-gray-500 md:text-base">
+              Endura Events is the trading name of Endura Sports Limited, a Trinidad and Tobago
+              registered company dedicated to supporting the growth of sports, fitness, and
+              community events.
+            </p>
+
+            <p className="text-sm text-gray-500 md:text-base">
+              Our platform was created to simplify the event experience for both participants and
+              organizers. Athletes can discover and register for events with ease, while organizers
+              gain access to tools that help manage registrations, promotions, and participant
+              engagement.
+            </p>
+
+            <p className="text-sm text-gray-500 md:text-base">
+              In addition to event registration services, Endura Events offers access to event
+              support solutions, including bib production, medal sourcing, and event infrastructure
+              services.
+            </p>
+
+            <p className="text-sm text-gray-500 md:text-base">
+              Powered by Powerhouse, our community-focused initiative, we are committed to
+              encouraging active lifestyles, strengthening the endurance sports community, and
+              helping organizers deliver memorable events.
+            </p>
+
+            <p className="text-sm text-gray-500 md:text-base">
+              Whether you're taking part in your first event or organizing your next one, Endura
+              Events is here to support your journey every step of the way.
             </p>
           </div>
 
