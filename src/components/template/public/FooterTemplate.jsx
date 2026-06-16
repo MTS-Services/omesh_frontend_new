@@ -102,7 +102,7 @@ const FooterTemplate = () => {
       {/* Bottom Bar */}
       <div className="bg-[#1FB356] py-3">
         <p className="text-center text-sm font-medium text-white">
-          © 2026 Endura Events Platform. All rights reserved.
+          © 2026 Endura Events Platform. All rights reserved. 
         </p>
       </div>
     </footer>
