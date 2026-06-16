@@ -80,7 +80,7 @@ const FooterTemplate = () => {
             </ul>
           </div>
 
-          {/* Follow Us */}
+          {/* Follow Us */} 
           <div>
             <h3 className="mb-4 text-base font-semibold text-white">Follow Us</h3>
             <div className="flex space-x-3">
