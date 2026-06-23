@@ -230,7 +230,7 @@ const EventDetailsView = () => {
   const stats = {
     sold: eventData.stats?.sold || `${soldSeats} / ${Number(eventData.totalSeats || 0)}`,
     revenue:
-      eventData?.revenue ||
+      eventData.revenue ||
       `${String(eventData.currency || 'USD').toUpperCase()} ${estimatedRevenue.toLocaleString()}`,
     remaining: eventData.stats?.remaining || String(Number(eventData.availableSeats || 0)),
     progressWidth: eventData.stats?.progressClass
