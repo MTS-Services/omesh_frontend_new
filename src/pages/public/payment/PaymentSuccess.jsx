@@ -61,8 +61,10 @@ const PaymentSuccess = () => {
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
               Your payment was completed successfully for{' '}
-              <span className="font-semibold text-slate-900">{eventName}</span>.
-              {quantity > 1 ? ` ${quantity} seats have` : ' Your seat has'} been reserved.
+              <span className="font-semibold text-slate-900">
+                {eventName} {batchId && `(Batch ID: ${batchId})`}
+              </span>
+              .{quantity > 1 ? ` ${quantity} seats have` : ' Your seat has'} been reserved.
             </p>
           </div>
 
