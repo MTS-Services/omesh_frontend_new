@@ -1,12 +1,42 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CalendarCheck2, CheckCircle2, Home } from 'lucide-react';
+import { API_CONFIG } from '../../../api/config/constants';
 
 const PaymentSuccess = () => {
   const { state } = useLocation();
 
-  const eventName = state?.eventName || 'your event';
+  const [searchParams] = useSearchParams();
+  const batchId = searchParams.get('batchId');
+  const eventName = searchParams.get('eventName');
+  // const eventName = state?.eventName || 'your event';
+  // const batchId = state?.batchId || 'N/A';
+
   const quantity = Number(state?.quantity || 1);
+
+  useEffect(() => {
+    async function confirmFygaroPayment(batchId) {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/api/v1/payment/fygaro/confirm`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ batchId }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Payment confirmation failed');
+      }
+
+      return json.data;
+    }
+
+    if (batchId) {
+      confirmFygaroPayment(batchId);
+    }
+  }, [state, batchId]);
 
   return (
     <section className="relative min-h-[calc(100vh-120px)] overflow-hidden bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
