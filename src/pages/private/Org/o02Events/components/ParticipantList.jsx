@@ -15,6 +15,7 @@ const COLUMNS = [
   'Date of Birth',
   'Age',
   'Gender',
+  'Team / Club',
 ];
 const VITE_API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '').trim();
 const normalizeParticipant = (item) => ({
@@ -57,6 +58,7 @@ const normalizeParticipant = (item) => ({
   dob: item?.dob ?? item?.dateOfBirth ?? item?.birthDate ?? '',
   age: item?.age ?? '',
   gender: item?.gender ?? '',
+  teamClub: item?.teamClub ?? item?.team ?? item?.club ?? '',
 });
 
 const resolveStringValue = (value) => {
@@ -109,6 +111,8 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
   const initialParticipantsRef = useRef(initialParticipants);
   const location = useLocation();
 
+  console.log('==================', participants);
+
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
@@ -128,16 +132,22 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
             ...(search.trim() ? { search: search.trim() } : {}),
           },
         });
-// console.log('============',response);
+        // console.log('============',response);
 
         // The `request` helper returns `response.data` (axios response.data).
         // Some backends return `{ data: [...], meta: { ... } }` and some return
         // `{ items: [...], pagination: { ... } }`. Avoid accidentally
         // overwriting the top-level meta when `response.data` exists.
         const looksLikeTopLevelMeta =
-          response && (response.meta || response.pagination || response.total || response.count || response.totalItems || response.totalCount);
+          response &&
+          (response.meta ||
+            response.pagination ||
+            response.total ||
+            response.count ||
+            response.totalItems ||
+            response.totalCount);
 
-        const payload = looksLikeTopLevelMeta ? response : response?.data ?? response;
+        const payload = looksLikeTopLevelMeta ? response : (response?.data ?? response);
         console.debug('participant fetch raw response:', response, '=> payload:', payload);
         // Dev: log payload to inspect available fields (remove in production)
         try {
@@ -160,12 +170,18 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
         // If backend returned a `meta` object, prefer it directly (map common keys)
         if (payload && payload.meta) {
           const m = payload.meta;
-          const totalItems = Number(m.totalItems ?? m.total ?? m.count ?? m.total_count ?? m.totalCount) || data.length;
+          const totalItems =
+            Number(m.totalItems ?? m.total ?? m.count ?? m.total_count ?? m.totalCount) ||
+            data.length;
           const itemsPerPage =
-            Number(m.itemsPerPage ?? m.perPage ?? m.limit ?? m.pageSize ?? m.per_page) || ITEMS_PER_PAGE;
-          const totalPages = Number(m.totalPages ?? m.total_pages ?? m.pageCount ?? Math.ceil(totalItems / itemsPerPage)) || Math.max(1, Math.ceil(totalItems / itemsPerPage));
+            Number(m.itemsPerPage ?? m.perPage ?? m.limit ?? m.pageSize ?? m.per_page) ||
+            ITEMS_PER_PAGE;
+          const totalPages =
+            Number(
+              m.totalPages ?? m.total_pages ?? m.pageCount ?? Math.ceil(totalItems / itemsPerPage)
+            ) || Math.max(1, Math.ceil(totalItems / itemsPerPage));
           const currentPage = Number(m.currentPage ?? m.current_page ?? m.page) || page;
-          const hasNextPage = m.hasNextPage ?? m.has_next_page ?? (currentPage < totalPages);
+          const hasNextPage = m.hasNextPage ?? m.has_next_page ?? currentPage < totalPages;
           const hasPreviousPage = m.hasPreviousPage ?? m.has_previous_page ?? currentPage > 1;
 
           const normalized = data.map(normalizeParticipant);
@@ -181,8 +197,10 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
         } else {
           // Fallback: infer pagination from other shapes
           const paginationCandidates = {
-            totalItems: payload?.total ?? payload?.count ?? payload?.total_count ?? payload?.totalCount,
-            itemsPerPage: payload?.limit ?? payload?.per_page ?? payload?.pageSize ?? ITEMS_PER_PAGE,
+            totalItems:
+              payload?.total ?? payload?.count ?? payload?.total_count ?? payload?.totalCount,
+            itemsPerPage:
+              payload?.limit ?? payload?.per_page ?? payload?.pageSize ?? ITEMS_PER_PAGE,
             totalPages: payload?.totalPages ?? payload?.pages ?? null,
             currentPage: payload?.page ?? page,
             hasNextPage: payload?.hasNextPage ?? null,
@@ -193,7 +211,9 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
           const inferredItemsPerPage = Number(paginationCandidates.itemsPerPage || ITEMS_PER_PAGE);
           const inferredTotalPages =
             Number(paginationCandidates.totalPages) ||
-            (inferredTotalItems > 0 ? Math.max(1, Math.ceil(inferredTotalItems / inferredItemsPerPage)) : Math.max(1, Math.ceil((data.length || 0) / inferredItemsPerPage)));
+            (inferredTotalItems > 0
+              ? Math.max(1, Math.ceil(inferredTotalItems / inferredItemsPerPage))
+              : Math.max(1, Math.ceil((data.length || 0) / inferredItemsPerPage)));
 
           const normalized = data.map(normalizeParticipant);
           setParticipants(normalized);
@@ -205,7 +225,9 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
             itemsPerPage: inferredItemsPerPage,
             hasNextPage:
               paginationCandidates.hasNextPage ??
-              (inferredTotalItems ? page < Math.ceil(inferredTotalItems / inferredItemsPerPage) : normalized.length === inferredItemsPerPage),
+              (inferredTotalItems
+                ? page < Math.ceil(inferredTotalItems / inferredItemsPerPage)
+                : normalized.length === inferredItemsPerPage),
             hasPreviousPage: paginationCandidates.hasPreviousPage ?? page > 1,
           });
         }
@@ -232,7 +254,9 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
   const currentPage = Number(meta.currentPage) || page;
   const totalPages = Math.max(
     1,
-    Number(meta.totalPages) || Math.ceil((meta.totalItems || 0) / (meta.itemsPerPage || ITEMS_PER_PAGE)) || 1
+    Number(meta.totalPages) ||
+      Math.ceil((meta.totalItems || 0) / (meta.itemsPerPage || ITEMS_PER_PAGE)) ||
+      1
   );
   const itemsPerPage = Number(meta.itemsPerPage) || ITEMS_PER_PAGE;
   const pageStart = participants.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
@@ -290,7 +314,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
       const excelBlob = new Blob([blob], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
-                  
+
       const downloadUrl = window.URL.createObjectURL(excelBlob);
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -428,6 +452,12 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
                     <span className="text-xs font-medium text-gray-400 sm:hidden">Gender</span>
                     <span className="max-w-[65%] wrap-break-word sm:max-w-none">
                       {p.gender || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="flex items-start justify-between gap-3 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:px-6 sm:py-5 sm:text-left">
+                    <span className="text-xs font-medium text-gray-400 sm:hidden">Team / Club</span>
+                    <span className="max-w-[65%] wrap-break-word sm:max-w-none">
+                      {p.teamClub || 'N/A'}
                     </span>
                   </td>
                 </tr>
