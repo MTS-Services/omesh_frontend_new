@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ import AddParticipantModal from './components/AddParticipantModal';
 import Modal from '../../../../components/common/Modal';
 import { request } from '../../../../api/request';
 import { ENDPOINT } from '../../../../api/config/endpoints';
-import { useEventDetails } from '../../../../features/organizer/events/hooks';
+// import { useEventDetails } from '../../../../features/organizer/events/hooks';
 import { resolveImageUrl } from '../../../../utils/images';
 import { formatLocationWithCountry } from '../../../../utils/eventUtils';
 
@@ -92,10 +92,48 @@ const EventDetailsView = () => {
   const [participantRefreshKey, setParticipantRefreshKey] = useState(0);
   const [closeAction, setCloseAction] = useState(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
-  const { event, loading, error, refetch } = useEventDetails(eventId);
+  // const { event, loading, error, refetch } = useEventDetails(eventId);
+  const [loading, setIsLoading] = useState(false);
+  const [event, setEvent] = useState(null);
+  const [error, setError] = useState(null);
   const backState = location.state?.from ? { from: location.state.from } : undefined;
 
-  console.log('EventDetailsView render', { event });
+  console.log('EventDetailsView render', event?.revenue);
+
+  const fetchRevenue = useCallback(async () => {
+    if (!eventId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await request({
+        method: 'GET',
+        url: `api/v1/events/revenue/${eventId}`,
+      });
+      console.log('Revenue response:', res?.data);
+      setEvent(res?.data || null);
+    } catch (err) {
+      console.error('Failed to fetch event details:', err);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [eventId]);
+
+  const handleEventFetch = async () => {
+    try {
+      await fetchRevenue();
+    } catch (err) {
+      console.error('Failed to fetch event details:', err);
+    }
+  };
+
+  const refetch = async () => {
+    await handleEventFetch();
+  };
+
+  useEffect(() => {
+    handleEventFetch();
+  }, [eventId, fetchRevenue]);
 
   const handleQuickAction = (key) => {
     if (key === 'closed') {
@@ -192,7 +230,7 @@ const EventDetailsView = () => {
   const stats = {
     sold: eventData.stats?.sold || `${soldSeats} / ${Number(eventData.totalSeats || 0)}`,
     revenue:
-      eventData.stats?.revenue ||
+      eventData?.revenue ||
       `${String(eventData.currency || 'USD').toUpperCase()} ${estimatedRevenue.toLocaleString()}`,
     remaining: eventData.stats?.remaining || String(Number(eventData.availableSeats || 0)),
     progressWidth: eventData.stats?.progressClass

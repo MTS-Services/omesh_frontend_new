@@ -12,8 +12,6 @@ const PaymentSuccess = () => {
   // const eventName = state?.eventName || 'your event';
   // const batchId = state?.batchId || 'N/A';
 
-  console.log('PaymentSuccess=========================:', state);
-
   const quantity = Number(state?.quantity || 1);
 
   useEffect(() => {
