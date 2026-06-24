@@ -27,7 +27,6 @@ const EventCard = ({ event }) => {
   const detailsPath = `/events/${event.id}`;
   const resolvedImage = resolveImageUrl(event.image);
 
-  // Handle both availableSeats (organizer) and seats (public) properties
   const availableSeats = event.availableSeats ?? event.seats ?? 0;
   const totalSeats = Number(event.totalSeats) || 0;
   const soldSeats = Math.max(totalSeats - availableSeats, 0);
@@ -81,7 +80,7 @@ const EventCard = ({ event }) => {
         : 'bg-[#414652]';
 
   return (
-    <div className="overflow-hidden rounded-lg bg-white ring-1 ring-gray-200 transition hover:ring-gray-200">
+    <div className="overflow-hidden rounded-lg bg-white ring-1 ring-gray-200 transition hover:shadow-md hover:ring-gray-300">
       {/* Body */}
       <div className="flex h-full flex-col">
         {/* Image */}
@@ -115,35 +114,45 @@ const EventCard = ({ event }) => {
 
         <div className="flex grow flex-col p-3 sm:p-4">
           <Link to={detailsPath} className="mb-1.5 sm:mb-2">
-            <h3 className="line-clamp-2 text-sm font-bold text-gray-900 hover:text-green-600 sm:text-lg lg:text-xl">
+            <h3 className="line-clamp-2 text-sm font-bold text-gray-900 hover:text-green-600 sm:text-base lg:text-lg">
               {event.title}
             </h3>
           </Link>
 
-          <div className="mb-2 space-y-0.5 text-xs text-gray-600 sm:mb-3">
-            <div className="flex items-start gap-2 pb-1.5">
-              <Calendar className="mt-0.5 h-3 w-3 shrink-0 text-green-500 sm:h-5 sm:w-5" />
-              <span className="text-sx line-clamp-1 sm:text-sm">
+          {/* Info Details */}
+          <div className="mb-3 space-y-1 text-xs text-gray-600">
+            <div className="flex items-start gap-2">
+              <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500 sm:h-4 sm:w-4" />
+              <span className="line-clamp-1 sm:text-sm">
                 <span className="font-semibold text-gray-800">Date:</span> {event.date}
               </span>
             </div>
-            <div className="flex items-center gap-2 pb-1.5">
-              <Clock className="h-3 w-3 shrink-0 text-green-500 sm:h-5 sm:w-5" />
-              <span className="text-sx sm:text-sm">
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 shrink-0 text-green-500 sm:h-4 sm:w-4" />
+              <span className="sm:text-sm">
                 <span className="font-semibold text-gray-800">Time:</span> {event.time}
               </span>
             </div>
-            <div className="flex items-start gap-2 pb-1.5">
-              <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-green-500 sm:h-5 sm:w-5" />
-              <span className="text-sx line-clamp-1 sm:text-sm">
+            <div className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500 sm:h-4 sm:w-4" />
+              <span className="line-clamp-1 sm:text-sm">
                 <span className="font-semibold text-gray-800">Location:</span>{' '}
                 {formatLocationWithCountry(event.location, event.country || event.flag)}
               </span>
             </div>
           </div>
 
+          <div className="mb-3 flex items-center justify-between rounded-md bg-gray-50 px-2.5 py-1.5 sm:px-3">
+            <span className="flex items-center gap-1 text-sm font-medium text-gray-500">
+              <span className="hidden md:block">Registration</span> Fee
+            </span>
+            <h3 className="text-sm font-bold text-[#1FB356] sm:text-xl">
+              {event.price ? `$${event.price}` : 'Free'}
+            </h3>
+          </div>
+
           {/* Seat availability */}
-          <div className="mt-auto mb-2 sm:mb-3">
+          <div className="mt-auto mb-3">
             <div className="mb-0.5 flex items-center justify-between text-xs">
               <span className="text-xs text-gray-700">Capacity</span>
               <span className="text-xs font-medium text-gray-800">
@@ -158,11 +167,13 @@ const EventCard = ({ event }) => {
             </div>
           </div>
 
+          {/* [🔥 NEW LAYOUT] Full width clean Price Row right above the buttons */}
+
           {/* Buttons */}
           <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-2">
             <Link
               to={detailsPath}
-              className={`w-full rounded-md border border-green-500 bg-[#1FB356] py-1 text-center text-sm font-medium text-white transition-colors hover:bg-[#188a47] sm:py-2`}
+              className="w-full rounded-md border border-gray-200 bg-white py-1.5 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:py-2"
             >
               View Details
             </Link>
@@ -170,7 +181,7 @@ const EventCard = ({ event }) => {
               <Link
                 to={registerTo}
                 state={registerState}
-                className="w-full rounded-md border border-gray-300 py-1 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:py-2"
+                className="w-full rounded-md border border-green-500 bg-[#1FB356] py-1.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#188a47] sm:py-2"
               >
                 Register Now
               </Link>

@@ -21,7 +21,7 @@ const RegistrationStats = ({ stats }) => (
     <div className="mt-4 grid grid-cols-2 gap-2">
       <div className="rounded-xl bg-green-50 px-4 py-3">
         <p className="text-xs font-bold tracking-wide text-green-600 uppercase">Revenue</p>
-        <p className="mt-1 text-lg font-bold text-green-800">{stats.revenue}</p>
+        <p className="mt-1 text-lg font-bold text-green-800">$ {stats.revenue}</p>
       </div>
       <div className="rounded-xl bg-amber-50 px-4 py-3">
         <p className="text-xs font-bold tracking-wide text-amber-500 uppercase">Remaining</p>
