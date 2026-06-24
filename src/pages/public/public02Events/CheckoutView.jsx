@@ -879,7 +879,7 @@ const CheckoutView = () => {
                                 Participant {idx + 1} ({p.tshirtName} - Size {p.tShirtSize})
                               </span>
                               <span className="font-semibold text-green-600">
-                                ${tshirtUnitPrice.toFixed(2)}
+                                ${tshirtUnitPrice.toFixed(2)} USD
                               </span>
                             </div>
                           )
