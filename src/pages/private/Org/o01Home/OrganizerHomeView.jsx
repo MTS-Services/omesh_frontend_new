@@ -67,7 +67,7 @@ const StatCard = ({ icon, iconBg, label, value, isLoading = false }) => {
         {isLoading ? (
           <Skeleton className="h-10 w-28 rounded-lg md:h-12 md:w-32" />
         ) : (
-          <p className="text-4xl font-black text-gray-900 md:text-5xl">{value}</p>
+          <p className="text-2xl font-black text-gray-900 md:text-3xl">{value}</p>
         )}
       </div>
     </div>
@@ -131,7 +131,7 @@ const OrganizerHomeView = () => {
         icon: TrendingUp,
         iconBg: 'bg-green-50',
         label: 'Total Revenue',
-        value: formatCurrency(stats.totalRevenue),
+        value: `${formatCurrency(stats.totalRevenue)} USD`,
       },
     ],
     [stats.monthlyParticipants, stats.pendingApproval, stats.totalEvents, stats.totalRevenue]
@@ -141,7 +141,6 @@ const OrganizerHomeView = () => {
   const topEventChartData = useMemo(() => topEventApiData || [], [topEventApiData]);
 
   // console.log("================================",topEventChartData);
-  
 
   return (
     <div>

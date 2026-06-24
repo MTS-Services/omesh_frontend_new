@@ -95,7 +95,7 @@ const PaymentView = () => {
                   <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-green-50">
                     <Icon className="h-6 w-6 text-green-600" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-3xl font-bold text-gray-900">{stat.value} USD</p>
                   <p className="mt-1 text-sm text-gray-600">{stat.label}</p>
                   {stat.hasButton && (
                     <button
@@ -144,7 +144,7 @@ const PaymentView = () => {
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-medium text-gray-500">Amount</span>
-                      <span className="text-sm font-semibold text-gray-900">{tx.amount}</span>
+                      <span className="text-sm font-semibold text-gray-900">{tx.amount} USD</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-medium text-gray-500">Status</span>
@@ -173,7 +173,7 @@ const PaymentView = () => {
                       <tr key={tx.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 text-gray-900">{tx.date}</td>
                         <td className="px-6 py-4 text-gray-900">{tx.method}</td>
-                        <td className="px-6 py-4 text-gray-900">{tx.amount}</td>
+                        <td className="px-6 py-4 text-gray-900">{tx.amount} USD</td>
                         <td
                           className={`px-6 py-4 font-medium ${statusStyles[tx.status] || 'text-gray-600'}`}
                         >

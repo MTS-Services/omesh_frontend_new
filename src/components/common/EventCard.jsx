@@ -147,7 +147,7 @@ const EventCard = ({ event }) => {
               <span className="hidden md:block">Registration</span> Fee
             </span>
             <h3 className="text-sm font-bold text-[#1FB356] sm:text-xl">
-              {event.price ? `$${event.price}` : 'Free'}
+              {event.price ? `$${event.price} USD` : 'Free'}
             </h3>
           </div>
 

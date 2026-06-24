@@ -314,7 +314,7 @@ const DetailsView = () => {
 
               {/* Price */}
               <h2 className="text-2xl text-green-500 sm:text-3xl">
-                ${event.price?.toLocaleString()}
+                ${event.price?.toLocaleString()} USD
               </h2>
 
               <hr className="border-gray-200" />

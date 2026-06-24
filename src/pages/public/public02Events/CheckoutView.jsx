@@ -902,7 +902,7 @@ const CheckoutView = () => {
                         Events: {event.price?.toLocaleString() || '0'} × {quantity}
                       </span>
                       <span className="font-semibold text-green-600">
-                        ${subtotal.toLocaleString()}
+                        ${subtotal.toLocaleString()} USD
                       </span>
                     </div>
                   )}
@@ -910,7 +910,7 @@ const CheckoutView = () => {
                   <div className="flex items-center justify-between text-gray-600">
                     <span>Processing Fee ({effectiveProcessingFeePct}%)</span>
                     <span className="font-semibold text-green-600">
-                      ${processingFee.toFixed(2)}
+                      ${processingFee.toFixed(2)} USD
                     </span>
                   </div>
 
@@ -925,7 +925,7 @@ const CheckoutView = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-base font-semibold text-gray-900">Total</span>
                       <span className="text-lg font-bold text-green-600">
-                        ${grandTotal.toFixed(2)}
+                        ${grandTotal.toFixed(2)} USD
                       </span>
                     </div>
                   </div>
