@@ -512,12 +512,6 @@ const CheckoutView = () => {
 
       const payload = response;
 
-      const payloadMessage = String(payload?.message || '').toLowerCase();
-      const payloadStatusCode = Number(payload?.statusCode || 0);
-
-      console.log('  Payload message:', payloadMessage);
-      console.log('  Payload statusCode:', payloadStatusCode);
-
       const isValid = Boolean(
         payload?.success === true || payload?.valid === true || payload?.isValid === true
       );

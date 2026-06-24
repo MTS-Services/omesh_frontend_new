@@ -15,10 +15,7 @@ import {
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import getFlagEmoji from '../../../components/common/FlagIcon';
 import { selectIsAuthenticated } from '../../../features/auth/selectors';
-import {
-  usePublicEventDetails,
-  usePublicEventsList,
-} from '../../../features/public/events/hooks';
+import { usePublicEventDetails, usePublicEventsList } from '../../../features/public/events/hooks';
 import { selectPublicEventById } from '../../../features/public/events/selectors';
 import { resolveImageUrl } from '../../../utils/images';
 import { formatDistanceValue, formatLocationWithCountry } from '../../../utils/eventUtils';
@@ -166,7 +163,7 @@ const DetailsView = () => {
           {/* 3-col grid: image | info | sidebar */}
           <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-20">
             {/* COL 1: hero + thumbnails */}
-            <div className="space-y-3">
+            <div className="w-full space-y-3 lg:max-w-[50%]">
               {/* Main image */}
               <div className="relative overflow-hidden rounded">
                 <img
