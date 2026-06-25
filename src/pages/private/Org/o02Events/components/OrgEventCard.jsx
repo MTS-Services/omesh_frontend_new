@@ -39,6 +39,45 @@ const formatDateFromISO = (isoString) => {
   }
 };
 
+const normalizeTimeForInput12Hour = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/[a-zA-Z]/.test(raw)) {
+    return raw;
+  }
+
+  const timeMatch = raw.match(/^(\d{1,2}):(\d{2})/);
+
+  if (timeMatch) {
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = timeMatch[2].padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${formattedHours}:${minutes} ${ampm}`;
+  }
+
+  try {
+    const parsed = new Date(raw.includes('T') ? raw : `1970-01-01T${raw}Z`);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'UTC',
+      });
+    }
+  } catch {
+    return '';
+  }
+
+  return '';
+};
+
 const OrgEventCard = ({ event, onEdit, onDelete }) => {
   const totalSeats = Number(event?.totalSeats || 0);
   const availableSeats = Number(event?.availableSeats || 0);
@@ -63,17 +102,24 @@ const OrgEventCard = ({ event, onEdit, onDelete }) => {
   );
 
   const eventDate = formatDateFromISO(event?.startAt) || event?.date || '-';
-  const eventTime = formatTimeFromISO(event?.startAt) || event?.time || '-';
+  const eventTime = event?.time
+    ? normalizeTimeForInput12Hour(event?.time)
+    : formatTimeFromISO(event?.startAt) || event?.time || '-';
 
   return (
     <div className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
       {/* Image */}
       <div className="relative h-44 w-full">
         {imageSrc ? (
-          <img src={imageSrc ||"/img/home/premium.avif"} alt={event.title}     onError={(e) => {
-                if (e.currentTarget.src.includes('/img/home/premium.avif')) return;
-                e.currentTarget.src = '/img/home/premium.avif';
-              }} className="h-full w-full object-cover" />
+          <img
+            src={imageSrc || '/img/home/premium.avif'}
+            alt={event.title}
+            onError={(e) => {
+              if (e.currentTarget.src.includes('/img/home/premium.avif')) return;
+              e.currentTarget.src = '/img/home/premium.avif';
+            }}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="h-full w-full bg-gray-50" />
         )}

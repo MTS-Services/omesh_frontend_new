@@ -177,7 +177,7 @@ const buildInitialForm = (event) => {
     title: event?.title ?? '',
     description: event?.body ?? event?.description ?? '',
     date: startAtDate,
-    time: startAtTime || normalizeTimeForInput(event?.time),
+    time: event?.time ? normalizeTimeForInput(event?.time) : startAtTime,
     location: event?.location ?? '',
     country: event?.country ?? '',
     totalTickets: event?.totalSeats?.toString?.() ?? event?.totalTickets?.toString?.() ?? '',
@@ -244,23 +244,22 @@ const extractPromoCodes = (response) => {
 const toIsoDateTime = (dateValue, timeValue) => {
   if (!dateValue) return '';
 
-  const rawDate = String(dateValue).trim();
-  const rawTime = String(timeValue || '00:00').trim();
+  try {
+    if (String(dateValue).includes('T')) {
+      return dateValue;
+    }
+    const timeStr = timeValue ? String(timeValue).trim() : '12:00 AM';
+    const combinedString = `${String(dateValue).trim()} ${timeStr}`;
+    const parsedDate = new Date(combinedString);
 
-  const ddmmyyMatch = rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if (ddmmyyMatch) {
-    const day = ddmmyyMatch[1].padStart(2, '0');
-    const month = ddmmyyMatch[2].padStart(2, '0');
-    const yearRaw = ddmmyyMatch[3];
-    const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
-    return `${year}-${month}-${day}T${rawTime}:00.000Z`;
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+    return parsedDate.toISOString();
+  } catch (error) {
+    console.error('Date conversion error:', error);
+    return '';
   }
-
-  if (rawDate.includes('T')) {
-    return rawDate;
-  }
-
-  return `${rawDate}T${rawTime}:00.000Z`;
 };
 
 const getShortDescription = (value) =>
@@ -312,6 +311,9 @@ const EventCreateView = () => {
   const [tShirtEnabled, setTShirtEnabled] = useState(() =>
     hasTShirtConfiguration(location.state?.event)
   );
+
+  console.log('=======================', location.state?.event);
+
   const [isFreeTShirt, setIsFreeTShirt] = useState(() => inferIsFreeTShirt(location.state?.event));
   const [selectedSizes, setSelectedSizes] = useState(() => {
     const initialForm = buildInitialForm(location.state?.event);
@@ -329,8 +331,6 @@ const EventCreateView = () => {
   const tShirtFileRef = useRef(null);
   const navigate = useNavigate();
   const { setSignal } = useEventsList();
-
-  console.log('========================', tShirtImagePaths);
 
   const isEditing = Boolean(location.state?.event?.id);
 
@@ -647,8 +647,6 @@ const EventCreateView = () => {
       payload.tShirtSizes = [];
     }
 
-    console.log('Submitting payload:=-=======', payload);
-
     if (!payload.startAt) {
       setSubmitError('Please provide a valid start date and time.');
       return;
@@ -836,7 +834,9 @@ const EventCreateView = () => {
                       <option value={form.promoCode}>{form.promoCode}</option>
                     ) : null}
                   </select>
-                  {promoLoading ? <p className="text-xs text-gray-500">Loading promo codes...</p> : null}
+                  {promoLoading ? (
+                    <p className="text-xs text-gray-500">Loading promo codes...</p>
+                  ) : null}
                   {promoLoadError ? <p className="text-xs text-red-500">{promoLoadError}</p> : null}
                 </div>
               </Field>
