@@ -312,8 +312,6 @@ const EventCreateView = () => {
     hasTShirtConfiguration(location.state?.event)
   );
 
-  console.log('=======================', location.state?.event);
-
   const [isFreeTShirt, setIsFreeTShirt] = useState(() => inferIsFreeTShirt(location.state?.event));
   const [selectedSizes, setSelectedSizes] = useState(() => {
     const initialForm = buildInitialForm(location.state?.event);
@@ -807,12 +805,12 @@ const EventCreateView = () => {
                   step="any"
                 />
               </Field>
-              <Field label="Ticket Price" icon={DollarSign}>
+              <Field label="Ticket Price in USD" icon={DollarSign}>
                 <input
                   type="number"
                   value={form.ticketPrice}
                   onChange={set('ticketPrice')}
-                  placeholder="Enter price ($)"
+                  placeholder="Enter price in USD"
                   className={inputCls}
                   min={0}
                   step="any"
