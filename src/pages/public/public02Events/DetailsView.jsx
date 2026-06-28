@@ -241,7 +241,7 @@ const DetailsView = () => {
             </div>
 
             {/* ── RIGHT: info ── */}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="w-full space-y-3 sm:space-y-4 lg:max-w-[50%]">
               {/* About */}
               <h1 className="text-2xl leading-tight font-bold text-gray-900 sm:text-3xl">
                 {event.title}
