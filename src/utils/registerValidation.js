@@ -132,7 +132,6 @@ export const validateRegistrationForm = (formData) => {
   const emailError = validateEmail(formData.email);
   if (emailError) errors.email = emailError;
 
-
   const passwordError = validatePassword(formData.password);
   if (passwordError) errors.password = passwordError;
 
@@ -201,9 +200,10 @@ export const formatRegistrationData = (formData) => {
   return {
     fullName: formData.fullName.trim(),
     email: formData.email.trim().toLowerCase(),
-    phoneNumber: formData.phoneNumber.replace(/\D/g, ''),
+    phone: formData.phoneNumber.replace(/\D/g, ''),
     password: formData.password,
     role: formData.role,
+    avatarUrl: formData.avatarUrl || null,
   };
 };
 

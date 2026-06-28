@@ -35,25 +35,25 @@ const StatusDropdown = ({ status, onStatusChange, loading }) => {
       const rect = buttonRef.current.getBoundingClientRect();
       const dropdownHeight = 150; // approximate height
       const viewportHeight = window.innerHeight;
-      
+
       // Check if there's space above, otherwise place below
       const spaceAbove = rect.top;
       const spaceBelow = viewportHeight - rect.bottom;
-      
+
       let top = rect.top - dropdownHeight - 10; // 8px gap
       let left = rect.left;
-      
+
       // If not enough space above, place below
       if (spaceAbove < dropdownHeight + 1 && spaceBelow > spaceAbove) {
         top = rect.bottom + 0;
       }
-      
+
       // Adjust for right edge on mobile
       const isMobile = window.innerWidth < 640;
       if (isMobile) {
         left = Math.max(8, Math.min(window.innerWidth - 8, rect.left));
       }
-      
+
       setDropdownPos({ top, left });
     }
   };
@@ -64,7 +64,7 @@ const StatusDropdown = ({ status, onStatusChange, loading }) => {
       const timer = setTimeout(() => calculatePosition(), 0);
       window.addEventListener('scroll', calculatePosition);
       window.addEventListener('resize', calculatePosition);
-      
+
       return () => {
         clearTimeout(timer);
         window.removeEventListener('scroll', calculatePosition);
@@ -79,8 +79,12 @@ const StatusDropdown = ({ status, onStatusChange, loading }) => {
   };
 
   const handleClickOutside = (e) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(e.target) && 
-        buttonRef.current && !buttonRef.current.contains(e.target)) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target) &&
+      buttonRef.current &&
+      !buttonRef.current.contains(e.target)
+    ) {
       setIsOpen(false);
     }
   };
@@ -118,17 +122,12 @@ const StatusDropdown = ({ status, onStatusChange, loading }) => {
         </button>
       </div>
 
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)} 
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
 
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="fixed z-50 w-48 max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl"
+          className="fixed z-50 max-h-64 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl"
           style={{
             top: `${dropdownPos.top}px`,
             left: `${Math.max(8, dropdownPos.left)}px`,
@@ -217,8 +216,6 @@ const PayoutTable = ({ initialStatus }) => {
     refresh,
   } = usePayRequests(initialStatus);
 
-  console.log('PayoutTable Render:', items);
-
   const limit = 10;
   const start = (page - 1) * limit;
   const end = Math.min(page * limit, total);
@@ -237,13 +234,27 @@ const PayoutTable = ({ initialStatus }) => {
             {status === 'loading' ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i} className="hidden sm:table-row">
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-40" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-28" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-8 w-28 rounded-lg" /></td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-32" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-40" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-28" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-8 w-28 rounded-lg" />
+                  </td>
                 </tr>
               ))
             ) : items.length === 0 ? (
@@ -254,78 +265,76 @@ const PayoutTable = ({ initialStatus }) => {
               </tr>
             ) : (
               items.map((row) => (
-              <tr
-                key={row.id}
-                className="m-2 block border border-gray-100 bg-white hover:bg-gray-50 sm:m-0 sm:table-row sm:border-0 sm:border-b sm:border-gray-50"
-              >
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <User size={12} />
-                    Organizer Name
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <User size={14} className="shrink-0 text-gray-400" />
-                    {row.organizer.fullName}
-                  </span>
-                </td>
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <Mail size={12} />
-                    Email
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Mail size={14} className="shrink-0 text-gray-400" />
-                    {row.organizer.email}
-                  </span>
-                </td>
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <DollarSign size={12} />
-                    Amount
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">{row.amount}</span>
-                </td>
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    Method
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    {row.method}
-                  </span>
-                </td>
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <CreditCard size={12} />
-                    Account Number
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <CreditCard size={14} className="shrink-0 text-gray-400" />
-                     {row.accountNumber}
-                  </span>
-                </td>
-                <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <CalendarDays size={12} />
-                    Date
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays size={14} className="shrink-0 text-gray-400" />
-                    {new Date(row.createdAt).toLocaleDateString()}
-                  </span>
-                </td>
-                <td className="flex items-center justify-between px-4 py-2.5 gap-8 sm:table-cell sm:px-6 sm:py-4">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                    <Tag size={12} />
-                    Action
-                  </span>
-                  <StatusDropdown
-                    status={row.status}
-                    onStatusChange={(newStatus) => onStatusChange(row.id, newStatus)}
-                    loading={!!actionLoading[row.id]}
-                  />
-                  {/* <StatusBadge /> */}
-                </td>
-              </tr>
+                <tr
+                  key={row.id}
+                  className="m-2 block border border-gray-100 bg-white hover:bg-gray-50 sm:m-0 sm:table-row sm:border-0 sm:border-b sm:border-gray-50"
+                >
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <User size={12} />
+                      Organizer Name
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <User size={14} className="shrink-0 text-gray-400" />
+                      {row.organizer.fullName}
+                    </span>
+                  </td>
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <Mail size={12} />
+                      Email
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Mail size={14} className="shrink-0 text-gray-400" />
+                      {row.organizer.email}
+                    </span>
+                  </td>
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <DollarSign size={12} />
+                      Amount
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">{row.amount}</span>
+                  </td>
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      Method
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">{row.method}</span>
+                  </td>
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <CreditCard size={12} />
+                      Account Number
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <CreditCard size={14} className="shrink-0 text-gray-400" />
+                      {row.accountNumber}
+                    </span>
+                  </td>
+                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <CalendarDays size={12} />
+                      Date
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays size={14} className="shrink-0 text-gray-400" />
+                      {new Date(row.createdAt).toLocaleDateString()}
+                    </span>
+                  </td>
+                  <td className="flex items-center justify-between gap-8 px-4 py-2.5 sm:table-cell sm:px-6 sm:py-4">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                      <Tag size={12} />
+                      Action
+                    </span>
+                    <StatusDropdown
+                      status={row.status}
+                      onStatusChange={(newStatus) => onStatusChange(row.id, newStatus)}
+                      loading={!!actionLoading[row.id]}
+                    />
+                    {/* <StatusBadge /> */}
+                  </td>
+                </tr>
               ))
             )}
           </tbody>

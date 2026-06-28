@@ -9,8 +9,8 @@ const formatCurrency = (value) => {
 
 const toPaymentStats = (payload) => {
   const availableBalance = Number(payload?.availableBalance ?? 0);
-  // const pendingBalance = Number(payload?.pendingBalance ?? 0);
-  const totalEarnings = Number(payload?.totalEarnings ?? 0);
+  const pendingBalance = Number(payload?.pendingBalance ?? 0);
+  // const totalEarnings = Number(payload?.totalEarnings ?? 0);
   const manualBalance = Number(payload?.manualBalance ?? 0);
 
   return [
@@ -21,16 +21,16 @@ const toPaymentStats = (payload) => {
       hasButton: true,
     },
 
-    // {
-    //   label: 'Total Earnings',
-    //   value: formatCurrency(totalEarnings),
-    //   icon: 'Download',
-    //   hasButton: false,
-    // },
+    {
+      label: 'Pending Withdrawal Request',
+      value: formatCurrency(pendingBalance),
+      icon: 'DollarSign',
+      hasButton: false,
+    },
     {
       label: 'Manual Balance',
       value: formatCurrency(manualBalance),
-      icon: 'Wallet',
+      icon: 'DollarSign',
       hasButton: false,
     },
   ];

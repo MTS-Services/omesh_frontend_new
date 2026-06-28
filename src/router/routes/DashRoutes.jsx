@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 
 const AdminHomeView = lazy(() => import('../../pages/private/Admin/a01Home/HomeView'));
+const UserPageView = lazy(() => import('../../pages/private/Admin/a04Payouts/UserPageView'));
 const AdminRequestedEventsView = lazy(
   () => import('../../pages/private/Admin/a02Event/view/RequestedEvent')
 );
@@ -31,6 +32,7 @@ export const dashRoutes = [
   { path: 'events/:id', element: <AdminEventsDetailsView /> },
   { path: 'training-plan', element: <AdminTrainingView /> },
   { path: 'payout-request', element: <AdminPayoutView /> },
+  { path: 'organizer', element: <UserPageView /> },
   { path: 'toolkit', element: <AdminToolkitView /> },
   { path: 'settings', element: <AdminSettingsView /> },
   { path: 'profile', element: <AdminProfileView /> },

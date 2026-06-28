@@ -125,12 +125,7 @@ const extractSalesItems = (salesPayload) => {
 const mapSalesItemsToChart = (items) => {
   return items.map((item, index) => {
     const label =
-      item?.label ??
-      item?.name ??
-      item?.month ??
-      item?.week ??
-      item?.date ??
-      `Item ${index + 1}`;
+      item?.label ?? item?.name ?? item?.month ?? item?.week ?? item?.date ?? `Item ${index + 1}`;
 
     const rawValue =
       item?.value ?? item?.count ?? item?.totalSales ?? item?.sales ?? item?.amount ?? 0;
@@ -177,13 +172,13 @@ const HomeView = () => {
           value={loading ? '...' : (stats?.data?.totalEvents ?? '—')}
         />
         <StatCard
-          icon={Clock}
+          icon={DollarSign}
           iconBg="bg-green-50"
           label="Total Earnings"
           value={loading ? '...' : (stats?.data?.totalEarnings ?? '—')}
         />
         <StatCard
-          icon={DollarSign}
+          icon={Clock}
           iconBg="bg-green-50"
           label="Total Organizer"
           value={loading ? '...' : (stats?.data?.totalOrganizers ?? '—')}
@@ -249,9 +244,7 @@ const HomeView = () => {
             />
           </AreaChart>
         </ResponsiveContainer>
-        {salesLoading && (
-          <p className="mt-3 text-xs text-gray-400">Updating chart data...</p>
-        )}
+        {salesLoading && <p className="mt-3 text-xs text-gray-400">Updating chart data...</p>}
       </div>
     </div>
   );

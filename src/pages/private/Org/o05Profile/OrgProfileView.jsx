@@ -45,7 +45,7 @@ const OrgProfileView = () => {
     }));
   }, [user]);
 
-  // console.log('User data:', user);  
+  // console.log('User data:', user);
 
   const [showPasswords, setShowPasswords] = useState({
     current: false,
@@ -103,9 +103,7 @@ const OrgProfileView = () => {
 
           if (uploadedUrl) {
             // If server returns relative path, prefix base URL
-            const finalUrl = uploadedUrl.startsWith('http')
-              ? uploadedUrl
-              : `${API_CONFIG.BASE_URL}${uploadedUrl}`;
+            const finalUrl = uploadedUrl.startsWith('http') ? uploadedUrl : `${uploadedUrl}`;
 
             setFormData((prev) => ({ ...prev, avatarUrl: finalUrl }));
             toast.success('Avatar uploaded successfully');
@@ -274,7 +272,11 @@ const OrgProfileView = () => {
             <div className="relative w-fit shrink-0">
               <div className="h-24 w-24 overflow-hidden rounded-full bg-gray-100">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={fullName} className="h-full w-full object-cover" />
+                  <img
+                    src={`${API_CONFIG.BASE_URL}${avatarUrl}`}
+                    alt={fullName}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-gray-400">
                     {initials}

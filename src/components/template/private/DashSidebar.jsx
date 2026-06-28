@@ -13,7 +13,7 @@ import {
   CreditCard,
   FileEdit,
   TicketPercent,
- 
+  NotebookText,
 } from 'lucide-react';
 import { useCurrentUser } from '../../../hooks/useRoleAccess.js';
 import { ROLES } from '../../../utils/auth';
@@ -21,6 +21,7 @@ import { ROLES } from '../../../utils/auth';
 const adminMenuItems = [
   { name: 'Dashboard', path: '/dash', icon: Home, end: true },
   { name: 'Requested Events', path: '/dash/events', icon: Trophy, end: false },
+  { name: 'Organizer', path: '/dash/organizer', icon: NotebookText, end: false },
   { name: 'Training plan', path: '/dash/training-plan', icon: Dumbbell, end: false },
   { name: 'Payout request', path: '/dash/payout-request', icon: DollarSign, end: false },
   { name: 'Organizer toolkit', path: '/dash/toolkit', icon: Calendar, end: false },
