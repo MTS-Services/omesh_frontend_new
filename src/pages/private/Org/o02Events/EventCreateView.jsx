@@ -365,6 +365,7 @@ const EventCreateView = () => {
     }
   }, [location.state?.event]);
 
+
   useEffect(() => {
     let isMounted = true;
 
@@ -796,12 +797,11 @@ const EventCreateView = () => {
               </Field>
               <Field label="Distance" icon={Ruler}>
                 <input
-                  type="number"
+                  type="text"
                   value={form.distance}
                   onChange={set('distance')}
-                  placeholder="Distance (km)"
+                  placeholder="e.g., 5km Trail race or 10km Relay"
                   className={inputCls}
-                  min={0}
                   step="any"
                 />
               </Field>

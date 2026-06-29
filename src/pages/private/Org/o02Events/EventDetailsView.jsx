@@ -98,8 +98,6 @@ const EventDetailsView = () => {
   const [error, setError] = useState(null);
   const backState = location.state?.from ? { from: location.state.from } : undefined;
 
-  console.log('EventDetailsView render', event?.revenue);
-
   const fetchRevenue = useCallback(async () => {
     if (!eventId) return;
     setIsLoading(true);
@@ -109,7 +107,6 @@ const EventDetailsView = () => {
         method: 'GET',
         url: `api/v1/events/revenue/${eventId}`,
       });
-      console.log('Revenue response:', res?.data);
       setEvent(res?.data || null);
     } catch (err) {
       console.error('Failed to fetch event details:', err);

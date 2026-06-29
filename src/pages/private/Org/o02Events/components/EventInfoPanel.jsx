@@ -1,5 +1,4 @@
 import { CalendarDays, MapPin, Info, CheckCircle } from 'lucide-react';
-import { formatDistanceValue } from '../../../../../utils/eventUtils';
 
 const EventInfoPanel = ({ title, description, date, distance, location }) => {
   const d = description;
@@ -27,7 +26,9 @@ const EventInfoPanel = ({ title, description, date, distance, location }) => {
           ))}
         </ul>
 
-        <p className="text-sm leading-relaxed text-gray-600">{d.body}</p>
+        <p className="text-sm leading-relaxed wrap-break-word whitespace-pre-wrap text-gray-600">
+          {d.body}
+        </p>
 
         <ul className="flex flex-col gap-1.5">
           {d.bullets2.map((b) => (
@@ -55,7 +56,7 @@ const EventInfoPanel = ({ title, description, date, distance, location }) => {
             <MapPin size={15} className="mt-1.5 shrink-0 text-green-500" />
             <div>
               <p className="font-semibold text-gray-800">Distance</p>
-              <p className="text-gray-600">{formatDistanceValue(distance)}</p>
+              <p className="text-gray-600">{distance}</p>
             </div>
           </div>
         </div>

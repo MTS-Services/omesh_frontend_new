@@ -18,7 +18,7 @@ import { selectIsAuthenticated } from '../../../features/auth/selectors';
 import { usePublicEventDetails, usePublicEventsList } from '../../../features/public/events/hooks';
 import { selectPublicEventById } from '../../../features/public/events/selectors';
 import { resolveImageUrl } from '../../../utils/images';
-import { formatDistanceValue, formatLocationWithCountry } from '../../../utils/eventUtils';
+import { formatLocationWithCountry } from '../../../utils/eventUtils';
 
 // ── Component ────────────────────────────────────────────────────────────────
 const DetailsView = () => {
@@ -33,11 +33,33 @@ const DetailsView = () => {
 
   const [activeImgById, setActiveImgById] = useState({});
   const [quantity, setQuantity] = useState(1);
-  const [copied, setCopied] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const stripRef = useRef(null);
   const activeImg = activeImgById[eventId] ?? 0;
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
+  const shareOnFacebook = () => {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+  };
+
+  const shareOnTwitter = () => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Look at this!');
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+  };
 
   const isAuth = useSelector(selectIsAuthenticated);
   const navigate = useNavigate();
@@ -101,11 +123,11 @@ const DetailsView = () => {
     }));
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  // const handleCopy = () => {
+  //   navigator.clipboard.writeText(window.location.href).catch(() => {});
+  //   setCopied(true);
+  //   setTimeout(() => setCopied(false), 1500);
+  // };
 
   const dec = () => setQuantity((q) => Math.max(1, q - 1));
   const inc = () => setQuantity((q) => q + 1);
@@ -263,7 +285,7 @@ const DetailsView = () => {
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm sm:text-base">{d.body}</p>
+                <p className="text-sm wrap-break-word whitespace-pre-wrap sm:text-base">{d.body}</p>
                 <ul className="list-disc space-y-1">
                   {(d.bullets2 ?? []).map((b) => (
                     <li key={b} className="flex items-center gap-2">
@@ -295,9 +317,7 @@ const DetailsView = () => {
                     <MapPin className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
                     <span className="font-semibold text-gray-900">Distance</span>
                   </div>
-                  <span className="ml-6 text-sm text-gray-600">
-                    {formatDistanceValue(event.distance)}
-                  </span>
+                  <span className="ml-6 text-sm text-gray-600">{event.distance}</span>
                 </div>
 
                 {/* Location - Full width */}
@@ -411,19 +431,25 @@ const DetailsView = () => {
                     title={copied ? 'Copied!' : 'Copy link'}
                     className="text-gray-500 transition hover:text-gray-700"
                   >
-                    <Copy className="h-4 w-4 sm:h-5 sm:w-5" />
+                    {copied ? (
+                      <span className="font-semibold text-green-600">Copied!</span>
+                    ) : (
+                      <Copy className="h-4 w-4 sm:h-5 sm:w-5" />
+                    )}
                   </button>
                   <button
                     type="button"
+                    onClick={shareOnFacebook}
                     aria-label="Share on Facebook"
-                    className="transition hover:text-green-700"
+                    className="transition hover:text-blue-600"
                   >
-                    <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Facebook className="h-4 w-4 sm:h-5 sm:w-4 sm:w-5" />
                   </button>
                   <button
                     type="button"
+                    onClick={shareOnTwitter}
                     aria-label="Share on Twitter"
-                    className="transition hover:text-green-700"
+                    className="transition hover:text-sky-500"
                   >
                     <Twitter className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
