@@ -681,6 +681,16 @@ const CheckoutView = () => {
           </div>
         </div> */}
 
+        <div className="mb-3">
+          <button
+            onClick={() => navigate(-1)} // -1 mane hocche thik tar ager page
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 gap-0.5 md:gap-8 lg:grid-cols-3">
           {/* ── Main Form ── */}
           <div className="space-y-6 lg:col-span-2">

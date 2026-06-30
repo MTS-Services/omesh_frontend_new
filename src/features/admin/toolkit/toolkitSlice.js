@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchAdminToolkitRequests } from './toolkitAPI';
+import { fetchAdminToolkitRequests, deleteAdminToolkitRequest } from './toolkitAPI';
 
 const initialState = {
   items: [],
@@ -11,6 +11,8 @@ const initialState = {
   hasPreviousPage: false,
   status: 'idle',
   error: null,
+  deletingId: null,
+  deleteError: null,
 };
 
 const extractItems = (payload) => {
@@ -24,12 +26,10 @@ const extractItems = (payload) => {
 const extractMeta = (payload) => {
   const root = payload?.data ?? payload;
   const meta = root?.meta ?? payload?.meta ?? {};
-
   const total = Number(meta?.totalItems ?? root?.total ?? extractItems(payload).length ?? 0);
   const limit = Number(meta?.itemsPerPage ?? root?.limit ?? 10);
   const page = Number(meta?.currentPage ?? root?.page ?? 1);
   const computedTotalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)));
-
   return {
     total,
     limit,
@@ -43,7 +43,11 @@ const extractMeta = (payload) => {
 const toolkitSlice = createSlice({
   name: 'adminToolkit',
   initialState,
-  reducers: {},
+  reducers: {
+    clearDeleteError: (state) => {
+      state.deleteError = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAdminToolkitRequests.pending, (state) => {
@@ -53,7 +57,6 @@ const toolkitSlice = createSlice({
       .addCase(fetchAdminToolkitRequests.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.items = extractItems(action.payload);
-
         const meta = extractMeta(action.payload);
         state.total = meta.total;
         state.page = meta.page;
@@ -69,8 +72,23 @@ const toolkitSlice = createSlice({
         }
         state.status = 'failed';
         state.error = action.payload;
+      })
+      .addCase(deleteAdminToolkitRequest.pending, (state, action) => {
+        state.deletingId = action.meta.arg;
+        state.deleteError = null;
+      })
+      .addCase(deleteAdminToolkitRequest.fulfilled, (state, action) => {
+        const deletedId = action.payload;
+        state.items = state.items.filter((item) => item.id !== deletedId);
+        state.total = Math.max(0, state.total - 1);
+        state.deletingId = null;
+      })
+      .addCase(deleteAdminToolkitRequest.rejected, (state, action) => {
+        state.deletingId = null;
+        state.deleteError = action.payload;
       });
   },
 });
 
+export const { clearDeleteError } = toolkitSlice.actions;
 export default toolkitSlice.reducer;

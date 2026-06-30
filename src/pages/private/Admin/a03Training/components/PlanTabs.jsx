@@ -7,7 +7,7 @@ const PlanTabs = ({ plans, activePlan, onPlanChange, onAddPlan, onDeletePlan }) 
       {plans.map((plan) => (
         <div
           key={plan}
-          className={`flex items-center gap-1 rounded-full pr-1 pl-3 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1 rounded-full pr-3 pl-3 text-sm font-medium transition-colors ${
             activePlan === plan
               ? 'bg-gray-900 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -16,7 +16,7 @@ const PlanTabs = ({ plans, activePlan, onPlanChange, onAddPlan, onDeletePlan }) 
           <button onClick={() => onPlanChange(plan)} className="py-1.5">
             {plan}
           </button>
-          {onDeletePlan && (
+          {/* {onDeletePlan && (
             <button
               onClick={() => onDeletePlan(plan)}
               className={`rounded-full p-1 transition-colors ${
@@ -28,7 +28,7 @@ const PlanTabs = ({ plans, activePlan, onPlanChange, onAddPlan, onDeletePlan }) 
             >
               <X size={12} />
             </button>
-          )}
+          )} */}
         </div>
       ))}
       <button

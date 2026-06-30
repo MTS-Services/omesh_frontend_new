@@ -8,3 +8,11 @@ export const fetchToolkitRequests = async ({ page = 1, limit = 10, signal } = {}
     signal,
   });
 };
+
+export const deleteToolkitRequest = async ({ id, signal } = {}) => {
+  return request({
+    method: 'DELETE',
+    url: `/api/v1/toolkit/${id}`,
+    signal,
+  });
+};

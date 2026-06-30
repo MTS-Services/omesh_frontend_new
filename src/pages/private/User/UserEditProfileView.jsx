@@ -26,7 +26,7 @@ const UserEditProfileView = () => {
   });
 
   // console.log("===================>",formData);
-  
+
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const fileInputRef = React.useRef(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -117,7 +117,7 @@ const UserEditProfileView = () => {
   const handleInputChange = (field) => (event) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
   };
-//sadfs
+  //sadfs
   useEffect(() => {
     if (!user) {
       return;
@@ -134,7 +134,9 @@ const UserEditProfileView = () => {
       email: user.email || '',
       phone: user.phone || '',
       address: user.location || '',
-      gender: String(user.gender || '').trim().toUpperCase(),
+      gender: String(user.gender || '')
+        .trim()
+        .toUpperCase(),
       avatarUrl: user.avatarUrl || '',
     }));
   }, [user]);
@@ -178,7 +180,9 @@ const UserEditProfileView = () => {
 
     const dateOfBirth = normalizeDate(user.dateOfBirth);
     const organizationName = normalizeText(user.organizationName);
-    const normalizedGender = String(formData.gender || '').trim().toUpperCase();
+    const normalizedGender = String(formData.gender || '')
+      .trim()
+      .toUpperCase();
 
     if (!['MALE', 'FEMALE'].includes(normalizedGender)) {
       toast.error('Please select a valid gender');
@@ -202,9 +206,8 @@ const UserEditProfileView = () => {
       ...(organizationName ? { organizationName } : {}),
     };
 
-
     // console.log("===================>",payload);
-    
+
     try {
       await updateProfile(payload);
       toast.success('Profile updated successfully');
@@ -252,10 +255,12 @@ const UserEditProfileView = () => {
       }));
     } catch (error) {
       const message =
-        typeof error === 'string'
-          ? error
-          : error?.response?.data?.message || error?.message;
-      toast.error(message || 'Password update failed');
+        typeof error === 'string' ? error : error?.response?.data?.message || error?.message;
+      toast.error(
+        message === 'Validation failed'
+          ? 'Password must be at least 8 characters with uppercase, lowercase, number and special character'
+          : message || 'Password update failed'
+      );
     } finally {
       setIsChangingPassword(false);
     }
@@ -290,7 +295,11 @@ const UserEditProfileView = () => {
                   aria-label="Change profile picture"
                   disabled={uploadingAvatar}
                 >
-                  {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                  {uploadingAvatar ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
                 </button>
                 <input
                   ref={fileInputRef}

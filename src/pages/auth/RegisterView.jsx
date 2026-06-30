@@ -57,14 +57,14 @@ const RegisterView = () => {
             </p>
 
             {/* Error Banner */}
-            {(apiError || error) && (
+            {/* {(apiError || error) && (
               <div className="mt-4">
                 <ErrorBanner
                   error={apiError || error?.message || 'An error occurred during registration'}
                   title="Registration Error"
                 />
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Form */}

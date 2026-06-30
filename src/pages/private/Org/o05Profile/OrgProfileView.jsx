@@ -245,9 +245,15 @@ const OrgProfileView = () => {
         confirmPassword: '',
       }));
     } catch (error) {
+      console.error('==================:', error);
+
       const message =
         typeof error === 'string' ? error : error?.response?.data?.message || error?.message;
-      toast.error(message || 'Password update failed');
+      toast.error(
+        message === 'Validation failed'
+          ? 'Password must be at least 8 characters with uppercase, lowercase, number and special character'
+          : message || 'Password update failed'
+      );
     } finally {
       setIsChangingPassword(false);
     }

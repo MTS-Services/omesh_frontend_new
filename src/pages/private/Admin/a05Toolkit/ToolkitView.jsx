@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, User, Mail, Phone, CalendarDays, Hash, Ticket, X, Loader2 } from 'lucide-react';
+import {
+  Eye,
+  User,
+  Mail,
+  Phone,
+  CalendarDays,
+  Hash,
+  Ticket,
+  X,
+  Loader2,
+  Trash2,
+  AlertTriangle,
+} from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAdminToolkitRequests } from '../../../../features/admin/toolkit/toolkitAPI';
+import {
+  fetchAdminToolkitRequests,
+  deleteAdminToolkitRequest,
+} from '../../../../features/admin/toolkit/toolkitAPI';
 import { API_CONFIG } from '../../../../api/config/constants';
 
 const OrganizerModal = ({ organizer, onClose }) => {
@@ -118,6 +133,57 @@ const OrganizerModal = ({ organizer, onClose }) => {
   );
 };
 
+const DeleteConfirmModal = ({ target, isDeleting, onCancel, onConfirm }) => {
+  if (!target) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      onClick={isDeleting ? undefined : onCancel}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center gap-3 px-6 pt-6 pb-2 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <AlertTriangle size={22} />
+          </span>
+          <h2 className="text-lg font-semibold text-gray-900">Delete Toolkit Request</h2>
+          <p className="text-sm text-gray-500">
+            Are you sure you want to delete the request from{' '}
+            <span className="font-medium text-gray-700">{target.name}</span>? This action cannot be
+            undone.
+          </p>
+        </div>
+
+        <div className="flex gap-3 px-6 py-5">
+          <button
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(target.id)}
+            disabled={isDeleting}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const formatDate = (isoDate) => {
   if (!isoDate) return '-';
   return new Date(isoDate).toLocaleDateString();
@@ -127,9 +193,19 @@ const ToolkitView = () => {
   const dispatch = useDispatch();
   const [page, setPage] = useState(1);
   const [selectedOrganizer, setSelectedOrganizer] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
 
-  const { items, total, limit, totalPages, status, error, hasNextPage, hasPreviousPage } =
-    useSelector((state) => state.adminToolkit);
+  const {
+    items,
+    total,
+    limit,
+    totalPages,
+    status,
+    error,
+    hasNextPage,
+    hasPreviousPage,
+    deletingId,
+  } = useSelector((state) => state.adminToolkit);
 
   useEffect(() => {
     dispatch(
@@ -142,6 +218,18 @@ const ToolkitView = () => {
 
   const start = total === 0 ? 0 : (page - 1) * limit + 1;
   const end = total === 0 ? 0 : Math.min(page * limit, total);
+
+  const handleDeleteConfirm = async (id) => {
+    const result = await dispatch(deleteAdminToolkitRequest(id));
+    if (deleteAdminToolkitRequest.fulfilled.match(result)) {
+      setDeleteTarget(null);
+      if (items.length === 1 && page > 1) {
+        setPage((p) => p - 1);
+      } else {
+        dispatch(fetchAdminToolkitRequests({ page, limit: 10 }));
+      }
+    }
+  };
 
   return (
     <div className="">
@@ -189,10 +277,7 @@ const ToolkitView = () => {
                   </span>
                 </th>
                 <th className="px-6 py-3 font-medium">
-                  <span className="inline-flex items-center justify-center gap-1.5">
-                    <Eye size={14} />
-                    Action
-                  </span>
+                  <span className="inline-flex items-center justify-center gap-1.5">Action</span>
                 </th>
               </tr>
             </thead>
@@ -216,100 +301,118 @@ const ToolkitView = () => {
                 </tr>
               )}
 
-              {items.map((row) => (
-                <tr
-                  key={row.id}
-                  className="m-2 block border border-gray-100 bg-white hover:bg-gray-50 sm:m-0 sm:table-row sm:border-0 sm:border-b sm:border-gray-50"
-                >
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <User size={12} />
-                      Name
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 sm:gap-0">
-                      <User size={14} className="text-gray-400 sm:hidden" />
-                      {row.submitter?.fullName || row.fullName || '-'}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <Mail size={12} />
-                      Email
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Mail size={14} className="shrink-0 text-gray-400" />
-                      {row.submitter?.email || row.email || '-'}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <Phone size={12} />
-                      Phone Number
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Phone size={14} className="shrink-0 text-gray-400" />
-                      {row.phone || '-'}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <Ticket size={12} />
-                      Event Name
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Ticket size={14} className="shrink-0 text-gray-400" />
-                      {row.eventName || '-'}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <CalendarDays size={12} />
-                      Event Date
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <CalendarDays size={14} className="shrink-0 text-gray-400" />
-                      {formatDate(row.eventDate)}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
-                      <Hash size={12} />
-                      Quantity
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Hash size={14} className="text-gray-400" />
-                      {row.quantity ?? '-'}
-                    </span>
-                  </td>
-                  <td className="flex items-center justify-between px-4 py-2.5 sm:table-cell sm:px-6 sm:py-4 sm:text-center">
-                    <span className="text-xs font-medium text-gray-400 sm:hidden">Action</span>
-                    <button
-                      className="mx-auto flex items-center justify-center text-gray-400 hover:text-gray-600"
-                      onClick={() =>
-                        setSelectedOrganizer({
-                          name: row.submitter?.fullName || row.fullName || '-',
-                          email: row.submitter?.email || row.email || '-',
-                          phone: row.phone || '-',
-                          event: row.eventName || '-',
-                          date: formatDate(row.eventDate),
-                          qty: row.quantity ?? '-',
-                          images:
-                            Array.isArray(row.designImageUrls) && row.designImageUrls.length > 0
-                              ? row.designImageUrls
-                              : [
-                                  '/img/random/Marathon.png',
-                                  '/img/random/Frame 13.png',
-                                  '/img/random/Frame 50.png',
-                                  '/img/random/Frame 49.png',
-                                ],
-                        })
-                      }
-                    >
-                      <Eye size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {items.map((row) => {
+                const displayName = row.submitter?.fullName || row.fullName || '-';
+                return (
+                  <tr
+                    key={row.id}
+                    className="m-2 block border border-gray-100 bg-white hover:bg-gray-50 sm:m-0 sm:table-row sm:border-0 sm:border-b sm:border-gray-50"
+                  >
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-800 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <User size={12} />
+                        Name
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 sm:gap-0">
+                        <User size={14} className="text-gray-400 sm:hidden" />
+                        {displayName}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-500 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <Mail size={12} />
+                        Email
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail size={14} className="shrink-0 text-gray-400" />
+                        {row.submitter?.email || row.email || '-'}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <Phone size={12} />
+                        Phone Number
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone size={14} className="shrink-0 text-gray-400" />
+                        {row.phone || '-'}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <Ticket size={12} />
+                        Event Name
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Ticket size={14} className="shrink-0 text-gray-400" />
+                        {row.eventName || '-'}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <CalendarDays size={12} />
+                        Event Date
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays size={14} className="shrink-0 text-gray-400" />
+                        {formatDate(row.eventDate)}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between border-b border-gray-50 px-4 py-2.5 text-gray-600 sm:table-cell sm:border-0 sm:px-6 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 sm:hidden">
+                        <Hash size={12} />
+                        Quantity
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Hash size={14} className="text-gray-400" />
+                        {row.quantity ?? '-'}
+                      </span>
+                    </td>
+                    <td className="flex items-center justify-between px-4 py-2.5 sm:table-cell sm:px-6 sm:py-4 sm:text-center">
+                      <span className="text-xs font-medium text-gray-400 sm:hidden">Action</span>
+                      <span className="mx-auto flex items-center justify-center gap-3">
+                        <button
+                          className="flex items-center justify-center text-gray-400 hover:text-gray-600"
+                          title="View"
+                          onClick={() =>
+                            setSelectedOrganizer({
+                              name: displayName,
+                              email: row.submitter?.email || row.email || '-',
+                              phone: row.phone || '-',
+                              event: row.eventName || '-',
+                              date: formatDate(row.eventDate),
+                              qty: row.quantity ?? '-',
+                              images:
+                                Array.isArray(row.designImageUrls) && row.designImageUrls.length > 0
+                                  ? row.designImageUrls
+                                  : [
+                                      '/img/random/Marathon.png',
+                                      '/img/random/Frame 13.png',
+                                      '/img/random/Frame 50.png',
+                                      '/img/random/Frame 49.png',
+                                    ],
+                            })
+                          }
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          className="flex items-center justify-center text-gray-400 hover:text-red-500 disabled:opacity-40"
+                          title="Delete"
+                          disabled={deletingId === row.id}
+                          onClick={() => setDeleteTarget({ id: row.id, name: displayName })}
+                        >
+                          {deletingId === row.id ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -344,6 +447,13 @@ const ToolkitView = () => {
       </div>
 
       <OrganizerModal organizer={selectedOrganizer} onClose={() => setSelectedOrganizer(null)} />
+
+      <DeleteConfirmModal
+        target={deleteTarget}
+        isDeleting={!!deletingId}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };

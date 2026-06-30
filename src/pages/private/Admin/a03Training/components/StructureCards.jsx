@@ -24,10 +24,11 @@ const StructureCards = ({ structures, onAdd, onEdit, onDelete }) => {
               i === 0 ? 'border-gray-300' : 'border-gray-100'
             }`}
           >
-            <p className="mb-3 text-3xl font-bold text-gray-900">
+            <p className="mb-2 text-3xl font-bold text-gray-900">
               {s.minutes}
               {/* <span className="ml-1 text-base font-semibold text-gray-900">Min</span> */}
             </p>
+            <p className="mb-1 text-sm leading-relaxed text-gray-500">{s.trainingPlan}</p>
             <p className="mb-5 text-sm leading-relaxed text-gray-500">{s.description}</p>
             <div className="flex gap-2">
               <button

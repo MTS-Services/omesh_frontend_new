@@ -19,6 +19,7 @@ import { usePublicEventDetails, usePublicEventsList } from '../../../features/pu
 import { selectPublicEventById } from '../../../features/public/events/selectors';
 import { resolveImageUrl } from '../../../utils/images';
 import { formatLocationWithCountry } from '../../../utils/eventUtils';
+import EventDetailSkeleton from './Eventdetailskeleton';
 
 // ── Component ────────────────────────────────────────────────────────────────
 const DetailsView = () => {
@@ -140,9 +141,7 @@ const DetailsView = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center text-gray-400">Loading…</div>
-    );
+    return <EventDetailSkeleton />;
   }
 
   if (error) {
@@ -157,9 +156,7 @@ const DetailsView = () => {
   }
 
   if (!event) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center text-gray-400">Loading…</div>
-    );
+    return <EventDetailSkeleton />;
   }
 
   const images = (event.images?.length ? event.images : [event.image])

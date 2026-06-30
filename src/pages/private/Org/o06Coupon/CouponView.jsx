@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Plus,
-  Trash2,
-  Send,
-  PencilLine,
-} from 'lucide-react';
+import { Plus, Trash2, Send, PencilLine } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { request } from '../../../../api/request';
 import { ENDPOINT } from '../../../../api/config/endpoints';
@@ -40,9 +35,7 @@ const resolveEmailValue = (value) => {
 
 const normalizeEmailList = (values) =>
   Array.isArray(values)
-    ? values
-        .map((value) => normalizeEmail(resolveEmailValue(value)))
-        .filter(Boolean)
+    ? values.map((value) => normalizeEmail(resolveEmailValue(value))).filter(Boolean)
     : [];
 
 const resolveDescriptionValue = (value) => {
@@ -62,20 +55,11 @@ const resolveDescriptionValue = (value) => {
 };
 
 const resolvePromoId = (item, index) => {
-  const candidate =
-    item?._id ??
-    item?.id ??
-    item?.promoId ??
-    item?.promo_id ??
-    index;
+  const candidate = item?._id ?? item?.id ?? item?.promoId ?? item?.promo_id ?? index;
 
   if (candidate && typeof candidate === 'object') {
     const nestedCandidate =
-      candidate._id ??
-      candidate.id ??
-      candidate.promoId ??
-      candidate.promo_id ??
-      index;
+      candidate._id ?? candidate.id ?? candidate.promoId ?? candidate.promo_id ?? index;
 
     return String(nestedCandidate);
   }
@@ -109,7 +93,16 @@ const normalizePromoHistory = (response) => {
   return list.map((item, index) => ({
     id: resolvePromoId(item, index),
     code: item.code || '-',
-    description: String(resolveDescriptionValue(item.description ?? item.promoDescription ?? item.promo_description ?? item.title ?? item.name ?? '')),
+    description: String(
+      resolveDescriptionValue(
+        item.description ??
+          item.promoDescription ??
+          item.promo_description ??
+          item.title ??
+          item.name ??
+          ''
+      )
+    ),
     userid: item.userid || '',
     allowedEmails: Array.isArray(item.allowedEmails)
       ? normalizeEmailList(item.allowedEmails)
@@ -158,9 +151,18 @@ const CouponView = () => {
   const fillPromoForm = (promo) => {
     setEditingPromoId(String(promo?.id || ''));
     setCouponCode(String(promo?.code || ''));
-    setDescription(String(resolveDescriptionValue(
-      promo?.description ?? promo?.promoDescription ?? promo?.promo_description ?? promo?.title ?? promo?.name ?? '',
-    )));
+    setDescription(
+      String(
+        resolveDescriptionValue(
+          promo?.description ??
+            promo?.promoDescription ??
+            promo?.promo_description ??
+            promo?.title ??
+            promo?.name ??
+            ''
+        )
+      )
+    );
     setStartsAt(String(promo?.startsAt || '').slice(0, 10));
     setExpiryDate(String(promo?.expiresAt || '').slice(0, 10));
     setManualRecipients(normalizeEmailList(promo?.allowedEmails));
@@ -265,7 +267,7 @@ const CouponView = () => {
         if (entry.id !== entryId) return entry;
         previousIsActive = entry.isActive;
         return { ...entry, isActive: nextIsActive };
-      }),
+      })
     );
 
     try {
@@ -279,8 +281,8 @@ const CouponView = () => {
     } catch (error) {
       setHistory((prevHistory) =>
         prevHistory.map((entry) =>
-          entry.id === entryId ? { ...entry, isActive: previousIsActive } : entry,
-        ),
+          entry.id === entryId ? { ...entry, isActive: previousIsActive } : entry
+        )
       );
 
       const message =
@@ -353,11 +355,26 @@ const CouponView = () => {
     const normalizedStartsAt = toIsoDateTime(startsAt, false);
     const normalizedExpiresAt = toIsoDateTime(expiryDate, true);
 
-    if (!editingPromoId && !code) { toast.error('Please enter promo code'); return; }
-    if (!trimmedDescription) { toast.error('Please enter promo description'); return; }
-    if (!startsAt) { toast.error('Please select start date'); return; }
-    if (!expiryDate) { toast.error('Please select expiry date'); return; }
-    if (recipients.length === 0) { toast.error('Please add at least one recipient email'); return; }
+    if (!editingPromoId && !code) {
+      toast.error('Please enter promo code');
+      return;
+    }
+    if (!trimmedDescription) {
+      toast.error('Please enter promo description');
+      return;
+    }
+    if (!startsAt) {
+      toast.error('Please select start date');
+      return;
+    }
+    if (!expiryDate) {
+      toast.error('Please select expiry date');
+      return;
+    }
+    if (recipients.length === 0) {
+      toast.error('Please add at least one recipient email');
+      return;
+    }
 
     setIsSending(true);
 
@@ -371,6 +388,8 @@ const CouponView = () => {
         allowedEmails: recipients,
       };
 
+      console.log('Saving promo with payload:', payload, 'Editing promo id:', editingPromoId);
+
       if (editingPromoId) {
         await request({
           method: 'PATCH',
@@ -378,11 +397,11 @@ const CouponView = () => {
           data: payload,
         });
       } else {
-        await request({
-          method: 'POST',
-          url: ENDPOINT.ORGANIZER.PROMO,
-          data: payload,
-        });
+        // await request({
+        //   method: 'POST',
+        //   url: ENDPOINT.ORGANIZER.PROMO,
+        //   data: payload,
+        // });
       }
 
       const response = await request({
@@ -391,7 +410,11 @@ const CouponView = () => {
       });
 
       setHistory(normalizePromoHistory(response));
-      toast.success(editingPromoId ? 'Promo updated successfully' : `Coupon sent to ${recipients.length} recipient(s)`);
+      toast.success(
+        editingPromoId
+          ? 'Promo updated successfully'
+          : `Coupon sent to ${recipients.length} recipient(s)`
+      );
 
       resetPromoForm();
     } catch (error) {
@@ -408,7 +431,6 @@ const CouponView = () => {
   };
 
   return (
-    
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Promo Code Management</h1>
@@ -417,13 +439,13 @@ const CouponView = () => {
         </p>
       </div>
 
-      
       <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
         <h2 className="mb-4 text-lg font-bold text-gray-900 sm:text-xl">Promo Setup</h2>
 
         {editingPromoId && showEditBanner ? (
           <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            Editing promo code. Promo Code is locked, but Allowed Emails, Expires At, and Status can be updated.
+            Editing promo code. Promo Code is locked, but Allowed Emails, Expires At, and Status can
+            be updated.
           </div>
         ) : null}
 
@@ -434,10 +456,13 @@ const CouponView = () => {
             value={manualEmail}
             onChange={(e) => setManualEmail(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); addManualRecipient(); }
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addManualRecipient();
+              }
             }}
             placeholder="Enter recipient email"
-            className="h-11 min-w-0 w-full rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+            className="h-11 w-full min-w-0 rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
           />
           <button
             type="button"
@@ -475,7 +500,7 @@ const CouponView = () => {
 
         <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3 xl:gap-4">
           {/* Promo Code */}
-          <div className="space-y-1.5 min-w-0">
+          <div className="min-w-0 space-y-1.5">
             <label className="block text-sm font-medium text-gray-700">Promo Code</label>
             <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
               <input
@@ -485,7 +510,7 @@ const CouponView = () => {
                 placeholder="Enter promo code"
                 readOnly={Boolean(editingPromoId)}
                 aria-readonly={Boolean(editingPromoId)}
-                className="h-11 flex-1 min-h-11 rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                className="h-11 min-h-11 flex-1 rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
               />
               {/* <button
                 type="button"
@@ -499,35 +524,35 @@ const CouponView = () => {
           </div>
 
           {/* Starts At */}
-          <div className="space-y-1.5 min-w-0">
+          <div className="min-w-0 space-y-1.5">
             <label className="block text-sm font-medium text-gray-700">Starts At</label>
             <input
               type="date"
               value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)}
-              className="h-11 min-w-0 w-full rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              className="h-11 w-full min-w-0 rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
             />
           </div>
 
           {/* Expires At */}
-          <div className="space-y-1.5 min-w-0">
+          <div className="min-w-0 space-y-1.5">
             <label className="block text-sm font-medium text-gray-700">Expires At</label>
             <input
               type="date"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className="h-11 min-w-0 w-full rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              className="h-11 w-full min-w-0 rounded-lg border border-gray-300 px-3 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
             />
           </div>
 
-          <div className="space-y-1.5 min-w-0 md:col-span-3">
+          <div className="min-w-0 space-y-1.5 md:col-span-3">
             <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter description"
               rows={3}
-              className="min-h-26 min-w-0 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 resize-none"
+              className="min-h-26 w-full min-w-0 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#42444A] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
             />
           </div>
 
@@ -551,11 +576,11 @@ const CouponView = () => {
 
             <div className="hidden md:block" />
 
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-end sm:items-center">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="h-11 inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 w-full sm:w-auto"
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto"
               >
                 Cancel
               </button>
@@ -567,7 +592,13 @@ const CouponView = () => {
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#1FB356] px-4 text-sm font-semibold text-white transition hover:bg-[#188a47] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 <Send size={16} />
-                {isSending ? (editingPromoId ? 'Updating...' : 'Creating...') : editingPromoId ? 'Update Promo Code' : 'Create Promo Code'}
+                {isSending
+                  ? editingPromoId
+                    ? 'Updating...'
+                    : 'Creating...'
+                  : editingPromoId
+                    ? 'Update Promo Code'
+                    : 'Create Promo Code'}
               </button>
             </div>
           </div>
@@ -642,11 +673,15 @@ const CouponView = () => {
                   </div>
                   <div className="col-span-2">
                     <dt className="text-gray-500">Starts At</dt>
-                    <dd className="mt-1 font-medium text-gray-900">{formatDateOnly(entry.startsAt)}</dd>
+                    <dd className="mt-1 font-medium text-gray-900">
+                      {formatDateOnly(entry.startsAt)}
+                    </dd>
                   </div>
                   <div className="col-span-2">
                     <dt className="text-gray-500">Expires At</dt>
-                    <dd className="mt-1 font-medium text-gray-900">{formatDateOnly(entry.expiresAt)}</dd>
+                    <dd className="mt-1 font-medium text-gray-900">
+                      {formatDateOnly(entry.expiresAt)}
+                    </dd>
                   </div>
                 </dl>
               </article>
@@ -662,27 +697,51 @@ const CouponView = () => {
           ) : history.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">No promo history yet.</div>
           ) : (
-            <table className="min-w-245 w-full text-sm">
+            <table className="w-full min-w-245 text-sm">
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
-                  <th className="whitespace-nowrap px-6 py-4 text-left font-semibold text-gray-700">Code</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-left font-semibold text-gray-700">Description</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-center font-semibold text-gray-700">Redeemed</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-left font-semibold text-gray-700">Starts At</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-left font-semibold text-gray-700">Expires At</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-center font-semibold text-gray-700">Status</th>
-                  <th className="whitespace-nowrap px-6 py-4 text-center font-semibold text-gray-700">Action</th>
+                  <th className="px-6 py-4 text-left font-semibold whitespace-nowrap text-gray-700">
+                    Code
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold whitespace-nowrap text-gray-700">
+                    Description
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-gray-700">
+                    Redeemed
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold whitespace-nowrap text-gray-700">
+                    Starts At
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold whitespace-nowrap text-gray-700">
+                    Expires At
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-gray-700">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center font-semibold whitespace-nowrap text-gray-700">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {history.map((entry) => (
                   <tr key={entry.id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900">{entry.code}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-gray-900">{entry.description || '-'}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-center text-gray-900">{entry.redeemedCount}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-gray-900">{formatDateOnly(entry.startsAt)}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-gray-900">{formatDateOnly(entry.expiresAt)}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-center">
+                    <td className="px-6 py-4 font-medium whitespace-nowrap text-gray-900">
+                      {entry.code}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                      {entry.description || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center whitespace-nowrap text-gray-900">
+                      {entry.redeemedCount}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                      {formatDateOnly(entry.startsAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                      {formatDateOnly(entry.expiresAt)}
+                    </td>
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
                       <select
                         value={entry.isActive ? 'Active' : 'Inactive'}
                         onChange={(e) => handleHistoryStatusChange(entry.id, e.target.value)}
@@ -696,7 +755,7 @@ const CouponView = () => {
                         <option value="Inactive">Inactive</option>
                       </select>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleDeletePromo(entry.id)}
