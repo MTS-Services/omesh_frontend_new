@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
 
-const PlanTabs = ({ plans, activePlan, onPlanChange, onAddPlan, onDeletePlan }) => {
+const PlanTabs = ({ plans, activePlan, onPlanChange, onAddPlan }) => {
   return (
     <div className="mb-8 flex flex-wrap items-center gap-3">
       {plans.map((plan) => (

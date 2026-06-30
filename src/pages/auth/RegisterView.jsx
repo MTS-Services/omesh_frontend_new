@@ -6,7 +6,6 @@ import ErrorBanner from '../../components/common/ErrorBanner';
 import FormInput from '../../components/common/FormInput';
 import ProfilePhotoUpload from '../../components/auth/ProfilePhotoUpload';
 import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthIndicator';
-
 const RegisterView = () => {
   const {
     formData,
