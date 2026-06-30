@@ -26,6 +26,33 @@ const formatYAxis = (value) => {
   return value === 0 ? '0' : `${value}`;
 };
 
+// Rounds a raw step size to a "nice" number: 1, 2, 2.5, 5, or 10 x 10^n
+const getNiceStep = (roughStep) => {
+  const exponent = Math.floor(Math.log10(roughStep));
+  const fraction = roughStep / 10 ** exponent;
+
+  let niceFraction;
+  if (fraction <= 1) niceFraction = 1;
+  else if (fraction <= 2) niceFraction = 2;
+  else if (fraction <= 2.5) niceFraction = 2.5;
+  else if (fraction <= 5) niceFraction = 5;
+  else niceFraction = 10;
+
+  return niceFraction * 10 ** exponent;
+};
+
+// Given the max value in the dataset, returns a nice rounded max and
+// evenly spaced round-number ticks (e.g. 0, 2k, 4k, 6k, 8k) instead of
+// odd values like 5.17654k that depend directly on the raw data.
+const getNiceYAxisConfig = (dataMax, tickCount = 5) => {
+  const safeMax = dataMax > 0 ? dataMax : 1;
+  const roughStep = safeMax / (tickCount - 1);
+  const step = getNiceStep(roughStep);
+  const niceMax = step * (tickCount - 1);
+  const ticks = Array.from({ length: tickCount }, (_, i) => Math.round(i * step));
+  return { max: niceMax, ticks };
+};
+
 const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value || 0));
 
 const formatCurrency = (value) =>
@@ -140,6 +167,13 @@ const OrganizerHomeView = () => {
   const salesChartData = useMemo(() => salesApiData || [], [salesApiData]);
   const topEventChartData = useMemo(() => topEventApiData || [], [topEventApiData]);
 
+  // Nice, rounded Y-axis max + ticks derived from the actual sales data
+  // so the axis always shows clean values like 2k, 4k, 6k.
+  const salesYAxisConfig = useMemo(() => {
+    const maxValue = salesChartData.reduce((max, item) => Math.max(max, item.value || 0), 0);
+    return getNiceYAxisConfig(maxValue, 5);
+  }, [salesChartData]);
+
   // console.log("================================",topEventChartData);
 
   return (
@@ -227,7 +261,8 @@ const OrganizerHomeView = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  domain={[0, 'dataMax + 5000']}
+                  domain={[0, salesYAxisConfig.max]}
+                  ticks={salesYAxisConfig.ticks}
                 />
                 <Tooltip
                   content={(props) => <CustomTooltip {...props} period={salesPeriod} />}
