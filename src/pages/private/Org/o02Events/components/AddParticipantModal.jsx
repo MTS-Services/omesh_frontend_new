@@ -15,7 +15,14 @@ const INITIAL = {
   team: '',
 };
 
-const AddParticipantModal = ({ open, onClose, eventId, totalPrice = 0, location = '', onSuccess }) => {
+const AddParticipantModal = ({
+  open,
+  onClose,
+  eventId,
+  totalPrice = 0,
+  location = '',
+  onSuccess,
+}) => {
   const [form, setForm] = useState(INITIAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,7 +39,7 @@ const AddParticipantModal = ({ open, onClose, eventId, totalPrice = 0, location 
     const requiredFields = [
       form.firstName,
       form.lastName,
-      form.email,
+      // form.email,
       form.phone,
       form.gender,
       form.age,
@@ -43,7 +50,9 @@ const AddParticipantModal = ({ open, onClose, eventId, totalPrice = 0, location 
       return;
     }
 
-    const normalizedGender = String(form.gender || '').trim().toUpperCase();
+    const normalizedGender = String(form.gender || '')
+      .trim()
+      .toUpperCase();
     if (!['MALE', 'FEMALE'].includes(normalizedGender)) {
       toast.error('Gender must be MALE or FEMALE');
       return;
@@ -58,7 +67,9 @@ const AddParticipantModal = ({ open, onClose, eventId, totalPrice = 0, location 
         {
           firstName: String(form.firstName || '').trim(),
           lastName: String(form.lastName || '').trim(),
-          email: String(form.email || '').trim().toLowerCase(),
+          email: String(form.email || '')
+            .trim()
+            .toLowerCase(),
           phone: String(form.phone || '').trim(),
           gender: normalizedGender,
           age: Number(form.age || 0),
