@@ -397,11 +397,11 @@ const CouponView = () => {
           data: payload,
         });
       } else {
-        // await request({
-        //   method: 'POST',
-        //   url: ENDPOINT.ORGANIZER.PROMO,
-        //   data: payload,
-        // });
+        await request({
+          method: 'POST',
+          url: ENDPOINT.ORGANIZER.PROMO,
+          data: payload,
+        });
       }
 
       const response = await request({

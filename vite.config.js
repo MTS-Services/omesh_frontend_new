@@ -3,9 +3,6 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
 
 // ESM-safe __dirname replacement
 const __filename = fileURLToPath(import.meta.url);

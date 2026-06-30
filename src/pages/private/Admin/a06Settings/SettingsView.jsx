@@ -175,9 +175,9 @@ const SettingsView = () => {
               className="w-full bg-white px-3 py-2 text-sm text-gray-800 outline-none"
             >
               <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
+              {/* <option value="EUR">EUR</option>
               <option value="GBP">GBP</option>
-              <option value="BDT">BDT</option>
+              <option value="BDT">BDT</option> */}
             </select>
           </div>
 
