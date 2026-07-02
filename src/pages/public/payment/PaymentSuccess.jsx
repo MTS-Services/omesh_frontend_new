@@ -7,7 +7,7 @@ const PaymentSuccess = () => {
   const { state } = useLocation();
 
   const [searchParams] = useSearchParams();
-  const batchId = searchParams.get('batchId');
+  const batchId = searchParams.get('batchId') || searchParams.get('customReference');
   const eventName = searchParams.get('eventName');
   // const eventName = state?.eventName || 'your event';
   // const batchId = state?.batchId || 'N/A';
