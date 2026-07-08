@@ -5,6 +5,8 @@ import getFlagEmoji from './FlagIcon';
 import { isAuthenticated } from '../../utils/auth';
 import { resolveImageUrl } from '../../utils/images';
 import { formatLocationWithCountry } from '../../utils/eventUtils';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '../../features/auth/selectors';
 
 const getBarColor = (availableSeats, totalSeats, status) => {
   if (status === 'Sold Out') return 'bg-[#EB4645]';
@@ -26,7 +28,7 @@ const getStatusStyle = (status) => {
 const EventCard = ({ event }) => {
   const detailsPath = `/events/${event.id}`;
   const resolvedImage = resolveImageUrl(event.image);
-
+  const isAuth = useSelector(selectIsAuthenticated);
   const availableSeats = event.availableSeats ?? event.seats ?? 0;
   const totalSeats = Number(event.totalSeats) || 0;
   const soldSeats = Math.max(totalSeats - availableSeats, 0);
@@ -47,7 +49,7 @@ const EventCard = ({ event }) => {
     displayStatus === 'Registration Closed' ||
     event.status === 'COMPLETED';
   const isLoggedIn = isAuthenticated();
-  const registerTo = isLoggedIn ? '/events/checkout' : '/auth/register';
+  const registerTo = isAuth ? '/events/checkout' : '/auth/register';
   const registerState = isLoggedIn
     ? {
         event: {
