@@ -15,7 +15,7 @@ const COLUMNS = [
   'Date of Birth',
   'Age',
   'Gender',
-  'Team / Club',
+  'Team / Club • Residential Area',
 ];
 const VITE_API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '').trim();
 const normalizeParticipant = (item) => ({
@@ -59,6 +59,8 @@ const normalizeParticipant = (item) => ({
   age: item?.age ?? '',
   gender: item?.gender ?? '',
   teamClub: item?.teamClub ?? item?.team ?? item?.club ?? '',
+  residentialArea:
+    item?.residential_area ?? item?.residentialArea ?? item?.residenceArea ?? item?.area ?? '',
 });
 
 const resolveStringValue = (value) => {
@@ -132,7 +134,7 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
             ...(search.trim() ? { search: search.trim() } : {}),
           },
         });
-        // console.log('============',response);
+        console.log('============', response);
 
         // The `request` helper returns `response.data` (axios response.data).
         // Some backends return `{ data: [...], meta: { ... } }` and some return
@@ -250,22 +252,6 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
 
     fetchParticipants();
   }, [page, search, eventId, refreshKey]);
-
-  const currentPage = Number(meta.currentPage) || page;
-  const totalPages = Math.max(
-    1,
-    Number(meta.totalPages) ||
-      Math.ceil((meta.totalItems || 0) / (meta.itemsPerPage || ITEMS_PER_PAGE)) ||
-      1
-  );
-  const itemsPerPage = Number(meta.itemsPerPage) || ITEMS_PER_PAGE;
-  const pageStart = participants.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-  const pageEnd =
-    participants.length === 0
-      ? 0
-      : Math.min((currentPage - 1) * itemsPerPage + participants.length, meta.totalItems || 0);
-  const canGoPrevious = meta.hasPreviousPage ?? currentPage > 1;
-  const canGoNext = meta.hasNextPage ?? currentPage < totalPages;
 
   const handleDownloadCsv = async () => {
     try {
@@ -393,7 +379,14 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
                       h === 'T-Shirt Size' ? 'text-center' : ''
                     }`}
                   >
-                    {h}
+                    {h === 'Team / Club • Residential Area' ? (
+                      <span className="inline-flex flex-col leading-tight">
+                        <span>Team / Club</span>
+                        <span>Residential Area</span>
+                      </span>
+                    ) : (
+                      h
+                    )}
                   </th>
                 ))}
               </tr>
@@ -455,10 +448,17 @@ const ParticipantList = ({ participants: initialParticipants, eventId, refreshKe
                     </span>
                   </td>
                   <td className="flex items-start justify-between gap-3 px-4 py-2.5 text-right text-gray-600 sm:table-cell sm:px-6 sm:py-5 sm:text-left">
-                    <span className="text-xs font-medium text-gray-400 sm:hidden">Team / Club</span>
-                    <span className="max-w-[65%] wrap-break-word sm:max-w-none">
-                      {p.teamClub || 'N/A'}
+                    <span className="text-xs font-medium text-gray-400 sm:hidden">
+                      Team / Club • Residential Area
                     </span>
+                    <div className="flex max-w-[65%] flex-col items-end gap-1 text-right sm:max-w-none sm:items-start sm:text-left">
+                      <span className="text-xs text-gray-700 sm:text-sm">
+                        Team: {p.teamClub || 'N/A'}
+                      </span>
+                      <span className="text-xs text-gray-700 sm:text-sm">
+                        Area: {p.residentialArea || 'N/A'}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ))}

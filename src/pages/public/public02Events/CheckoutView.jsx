@@ -27,6 +27,7 @@ const emptyParticipant = () => ({
   tshirtId: null,
   tshirtName: null,
   teamClub: '',
+  residential_area: '',
 });
 
 const genderOptions = [
@@ -356,6 +357,7 @@ const CheckoutView = () => {
           dateOfBirth: isoDateOfBirth,
           location: event.location || '',
           teamClub: p.teamClub?.trim() || '',
+          residential_area: p.residential_area?.trim() || '',
           status: source === 'MANUAL_ADD' ? 'PAID' : 'PENDING_PAYMENT',
         };
 
@@ -794,12 +796,22 @@ const CheckoutView = () => {
                     )}
 
                     {/* Team / Club (optional) */}
-                    <InputField
-                      label="Team / Club (optional)"
-                      placeholder="Team name..."
-                      value={p.teamClub}
-                      onChange={handleChange(i, 'teamClub')}
-                    />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <InputField
+                        label="Team / Club (optional)"
+                        placeholder="Team name..."
+                        value={p.teamClub}
+                        onChange={handleChange(i, 'teamClub')}
+                      />
+
+                      {/* Residential Area (optional) */}
+                      <InputField
+                        label="Residential Area (optional)"
+                        placeholder="Enter residential area..."
+                        value={p.residential_area}
+                        onChange={handleChange(i, 'residential_area')}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}

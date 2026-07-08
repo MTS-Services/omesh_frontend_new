@@ -13,6 +13,7 @@ const INITIAL = {
   age: '',
   dob: '',
   team: '',
+  residential_area: '',
 };
 
 const AddParticipantModal = ({
@@ -76,6 +77,7 @@ const AddParticipantModal = ({
           dateOfBirth: String(form.dob || '').trim(),
           location: String(location || '').trim(),
           teamClub: String(form.team || '').trim(),
+          residential_area: String(form.residential_area || '').trim(),
           status: 'PENDING_PAYMENT',
         },
       ],
@@ -200,6 +202,18 @@ const AddParticipantModal = ({
             name="team"
             value={form.team}
             onChange={handleChange}
+            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+          />
+        </div>
+
+        {/* Residential Area */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-gray-700">Residential Area (optional)</label>
+          <input
+            name="residential_area"
+            value={form.residential_area}
+            onChange={handleChange}
+            placeholder="Enter residential area..."
             className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
           />
         </div>
