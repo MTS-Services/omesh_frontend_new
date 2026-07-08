@@ -19,11 +19,9 @@ const PaymentSuccess = () => {
   const quantity = Number(state?.quantity || 1);
   const missingBatchId = !batchId;
 
-  const [status, setStatus] = useState(missingBatchId ? STATUS.ERROR : STATUS.LOADING);
+  const [status, setStatus] = useState(missingBatchId ? STATUS.SUCCESS : STATUS.LOADING);
   const [eventName, setEventName] = useState(eventNameFromUrl || '');
-  const [errorMessage, setErrorMessage] = useState(
-    missingBatchId ? 'No booking reference found in the URL.' : ''
-  );
+  const [errorMessage, setErrorMessage] = useState('');
 
   const hasConfirmed = useRef(false);
 
