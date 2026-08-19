@@ -42,7 +42,6 @@ const PasswordStrengthIndicator = ({ password }) => {
         <RequirementItem label="Lowercase letter" isMet={requirements.hasLowerCase} />
         <RequirementItem label="Uppercase letter" isMet={requirements.hasUpperCase} />
         <RequirementItem label="Number" isMet={requirements.hasNumber} />
-        <RequirementItem label="Special character" isMet={requirements.hasSpecialChar} />
         <RequirementItem label="At least 8 characters" isMet={requirements.hasMinLength} />
       </div>
     </div>

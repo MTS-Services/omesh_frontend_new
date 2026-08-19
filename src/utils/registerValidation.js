@@ -72,7 +72,6 @@ export const validatePassword = (password) => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
   if (!hasUpperCase) {
     return 'Password must contain at least one uppercase letter';
@@ -82,9 +81,6 @@ export const validatePassword = (password) => {
   }
   if (!hasNumber) {
     return 'Password must contain at least one number';
-  }
-  if (!hasSpecialChar) {
-    return 'Password must contain at least one special character';
   }
 
   return null;
@@ -186,7 +182,6 @@ export const getPasswordRequirements = (password) => {
     hasLowerCase: /[a-z]/.test(password),
     hasUpperCase: /[A-Z]/.test(password),
     hasNumber: /[0-9]/.test(password),
-    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     hasMinLength: password.length >= 8,
   };
 };
