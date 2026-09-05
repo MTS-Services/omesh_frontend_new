@@ -13,6 +13,7 @@ import {
   Upload,
   ArrowLeft,
   ImagePlus,
+  Plus,
   X,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ const EMPTY_FORM = {
   location: '',
   totalTickets: '',
   distance: '',
-  ticketPrice: '',
+  pricingTiers: [{ name: 'General Admission', price: '' }],
   promoCode: '',
   promoDiscount: '',
   bannerImages: [],
@@ -173,6 +174,14 @@ const buildInitialForm = (event) => {
     }));
   }
 
+  const pricingTiers = Array.isArray(event?.pricingTiers) && event.pricingTiers.length > 0
+    ? event.pricingTiers.map((tier) => ({
+        id: tier.id,
+        name: tier.name ?? '',
+        price: String(tier.price ?? ''),
+      }))
+    : [{ name: 'General Admission', price: String(event?.price ?? event?.ticketPrice ?? '') }];
+
   return {
     title: event?.title ?? '',
     description: event?.body ?? event?.description ?? '',
@@ -182,7 +191,7 @@ const buildInitialForm = (event) => {
     country: event?.country ?? '',
     totalTickets: event?.totalSeats?.toString?.() ?? event?.totalTickets?.toString?.() ?? '',
     distance: event?.distance ?? '',
-    ticketPrice: String(event?.price ?? event?.ticketPrice ?? ''),
+    pricingTiers,
     promoCode: event?.promoCode ?? '',
     promoDiscount: event?.promoDiscount ?? '',
     bannerImages,
@@ -402,6 +411,29 @@ const EventCreateView = () => {
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
+  const updatePricingTier = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      pricingTiers: prev.pricingTiers.map((tier, tierIndex) =>
+        tierIndex === index ? { ...tier, [field]: value } : tier
+      ),
+    }));
+  };
+
+  const addPricingTier = () => {
+    setForm((prev) => ({
+      ...prev,
+      pricingTiers: [...prev.pricingTiers, { name: '', price: '' }],
+    }));
+  };
+
+  const removePricingTier = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      pricingTiers: prev.pricingTiers.filter((_, tierIndex) => tierIndex !== index),
+    }));
+  };
+
   const handleTShirtImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -619,6 +651,14 @@ const EventCreateView = () => {
       .map((b) => b.preview)
       .filter(Boolean);
     const storedImages = [...existingPreviews, ...(uploadedImages || [])];
+    const pricingTiers = form.pricingTiers
+      .map((tier) => ({
+        ...(tier.id ? { id: tier.id } : {}),
+        name: String(tier.name || '').trim(),
+        price: Number(tier.price || 0),
+      }))
+      .filter((tier) => tier.name);
+
     const payload = {
       title: String(form.title || '').trim(),
       startAt,
@@ -626,7 +666,8 @@ const EventCreateView = () => {
       endAt: addHoursToIso(startAt, 1),
       location: String(form.location || '').trim(),
       distance: String(form.distance || '').trim(),
-      price: Number(form.ticketPrice || 0),
+      price: pricingTiers[0]?.price || 0,
+      pricingTiers,
       currency: 'USD',
       totalSeats: Number(form.totalTickets || 0),
       country: String(form.country || '').trim() || 'Trinidad & Tobago',
@@ -653,6 +694,11 @@ const EventCreateView = () => {
 
     if (!payload.title || !payload.location || !payload.body) {
       setSubmitError('Title, location, and description are required.');
+      return;
+    }
+
+    if (pricingTiers.length === 0 || pricingTiers.some((tier) => tier.price < 0)) {
+      setSubmitError('Add at least one pricing tier with a valid price.');
       return;
     }
 
@@ -805,17 +851,60 @@ const EventCreateView = () => {
                   step="any"
                 />
               </Field>
-              <Field label="Ticket Price in USD" icon={DollarSign}>
-                <input
-                  type="number"
-                  value={form.ticketPrice}
-                  onChange={set('ticketPrice')}
-                  placeholder="Enter price in USD"
-                  className={inputCls}
-                  min={0}
-                  step="any"
-                />
-              </Field>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900">Pricing Tiers</h3>
+                  <p className="text-xs text-gray-500">Add the ticket names and prices available for this event.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addPricingTier}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-green-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-600"
+                >
+                  <Plus size={14} />
+                  Add Tier
+                </button>
+              </div>
+              <div className="space-y-3">
+                {form.pricingTiers.map((tier, index) => (
+                  <div key={tier.id || index} className="grid grid-cols-[minmax(0,1fr)_9rem_auto] items-end gap-2">
+                    <Field label={`Tier ${index + 1} Name`} icon={Tag}>
+                      <input
+                        type="text"
+                        value={tier.name}
+                        onChange={(e) => updatePricingTier(index, 'name', e.target.value)}
+                        placeholder="e.g. Early Bird"
+                        className={inputCls}
+                        required
+                      />
+                    </Field>
+                    <Field label="Price (USD)" icon={DollarSign}>
+                      <input
+                        type="number"
+                        value={tier.price}
+                        onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
+                        placeholder="0.00"
+                        className={inputCls}
+                        min={0}
+                        step="0.01"
+                        required
+                      />
+                    </Field>
+                    <button
+                      type="button"
+                      onClick={() => removePricingTier(index)}
+                      disabled={form.pricingTiers.length === 1}
+                      aria-label={`Remove tier ${index + 1}`}
+                      className="mb-0.5 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-red-200 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="">

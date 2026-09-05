@@ -75,6 +75,7 @@ const DetailsView = () => {
           flag: event.flag,
           country: event.country,
           price: event.price,
+          pricingTiers: event.pricingTiers,
           date: event.date,
           time: event.time,
           location: event.location,

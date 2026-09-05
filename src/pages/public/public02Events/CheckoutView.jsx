@@ -48,6 +48,7 @@ const CheckoutView = () => {
   const navigate = useNavigate();
   const event = state?.event ?? null;
   const quantity = state?.quantity ?? 1;
+  const pricingTiers = Array.isArray(event?.pricingTiers) ? event.pricingTiers : [];
 
   const getPaymentFailureState = (reason) => ({
     eventName: event?.title || event?.eventName || event?.name || 'your event',
@@ -57,6 +58,9 @@ const CheckoutView = () => {
 
   const [participants, setParticipants] = useState(() =>
     Array.from({ length: quantity }, emptyParticipant)
+  );
+  const [selectedPricingTierId, setSelectedPricingTierId] = useState(
+    () => pricingTiers[0]?.id || ''
   );
   const [promoCode, setPromoCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -175,7 +179,9 @@ const CheckoutView = () => {
     }
   };
 
-  const subtotal = event ? Number(event.price || 0) * quantity : 0;
+  const selectedPricingTier = pricingTiers.find((tier) => tier.id === selectedPricingTierId);
+  const ticketPrice = selectedPricingTier ? Number(selectedPricingTier.price) : Number(event?.price || 0);
+  const subtotal = event ? ticketPrice * quantity : 0;
   const tshirtUnitPrice = Number(event?.tShirtPrice ?? 30);
   const selectedTShirtCount = participants.filter((p) => p.buyTShirt).length;
   const tShirtTotal = parseFloat((selectedTShirtCount * tshirtUnitPrice).toFixed(2));
@@ -325,6 +331,7 @@ const CheckoutView = () => {
   const buildRegistrationPayload = (source = 'ONLINE') => {
     const payload = {
       eventId: event.id,
+      ...(selectedPricingTierId ? { pricingTierId: selectedPricingTierId } : {}),
       source,
       platformFee: platformFeePct,
       totalPrice: grandTotal,
@@ -696,6 +703,38 @@ const CheckoutView = () => {
         <div className="grid grid-cols-1 gap-0.5 md:gap-8 lg:grid-cols-3">
           {/* ── Main Form ── */}
           <div className="space-y-6 lg:col-span-2">
+            {pricingTiers.length > 0 && (
+              <div className="rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="text-base font-semibold text-gray-900">Choose your ticket</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {pricingTiers.map((tier) => (
+                    <label
+                      key={tier.id}
+                      className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition ${
+                        selectedPricingTierId === tier.id
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 hover:border-green-300'
+                      }`}
+                    >
+                      <span>
+                        <span className="block text-sm font-semibold text-gray-900">{tier.name}</span>
+                        <span className="mt-1 block text-sm text-gray-500">
+                          ${Number(tier.price).toFixed(2)} USD per participant
+                        </span>
+                      </span>
+                      <input
+                        type="radio"
+                        name="pricingTier"
+                        value={tier.id}
+                        checked={selectedPricingTierId === tier.id}
+                        onChange={() => setSelectedPricingTierId(tier.id)}
+                        className="h-4 w-4 accent-green-500"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
               {participants.map((p, i) => (
                 <div key={i} className="overflow-hidden rounded-lg bg-white shadow-sm">
@@ -921,7 +960,7 @@ const CheckoutView = () => {
                   {event && (
                     <div className="flex items-center justify-between text-gray-600">
                       <span>
-                        Events: {event.price?.toLocaleString() || '0'} × {quantity}
+                        {selectedPricingTier?.name || 'Events'}: {ticketPrice.toLocaleString()} × {quantity}
                       </span>
                       <span className="font-semibold text-green-600">
                         ${subtotal.toLocaleString()} USD

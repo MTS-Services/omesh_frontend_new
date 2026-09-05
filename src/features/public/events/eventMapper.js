@@ -182,6 +182,15 @@ export const mapPublicEvent = (rawEvent) => {
           .filter(Boolean)
       : [];
   const tShirtPrice = toNumberOr(rawEvent.tShirtPrice ?? rawEvent.tshirtPrice, 0);
+  const pricingTiers = Array.isArray(rawEvent.pricingTiers)
+    ? rawEvent.pricingTiers
+        .map((tier) => ({
+          id: normalizeString(tier?.id),
+          name: normalizeString(tier?.name),
+          price: toNumberOr(tier?.price, 0),
+        }))
+        .filter((tier) => tier.name)
+    : [];
 
   return {
     id: normalizeString(rawEvent.id),
@@ -195,6 +204,7 @@ export const mapPublicEvent = (rawEvent) => {
     country,
     flag: mapFlagCode(country, rawEvent.flag),
     price: toNumberOr(rawEvent.price, 0),
+    pricingTiers,
     currency: normalizeString(rawEvent.currency).toUpperCase(),
     seats,
     availableSeats: seats,
