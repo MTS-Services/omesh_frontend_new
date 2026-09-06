@@ -20,6 +20,7 @@ const AddParticipantModal = ({
   open,
   onClose,
   eventId,
+  pricingTierId,
   totalPrice = 0,
   location = '',
   onSuccess,
@@ -61,6 +62,7 @@ const AddParticipantModal = ({
 
     const payload = {
       eventId,
+      pricingTierId,
       source: 'MANUAL_ADD',
       platformFee: 7,
       totalPrice: Number(totalPrice || 0),

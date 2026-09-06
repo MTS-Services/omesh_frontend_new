@@ -89,6 +89,7 @@ const EventDetailsView = () => {
   const { eventId } = useParams();
   const location = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTierId, setSelectedTierId] = useState(null);
   const [participantRefreshKey, setParticipantRefreshKey] = useState(0);
   const [closeAction, setCloseAction] = useState(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
@@ -132,16 +133,28 @@ const EventDetailsView = () => {
     handleEventFetch();
   }, [eventId, fetchRevenue]);
 
-  const handleQuickAction = (key) => {
+  const handleQuickAction = (key, tierId, tierName, isTierClosed) => {
     if (key === 'closed') {
-      setCloseAction({
-        key,
-        title: isRegistrationClosed ? 'Reopen  Registration' : 'Registration Closed',
-        message: isRegistrationClosed
-          ? 'Do you want to reopen registration for this event?'
-          : 'Do you want to close registration for this event?',
-        registerClose: !isRegistrationClosed,
-      });
+      if (tierId) {
+        setCloseAction({
+          key,
+          pricingTierId: tierId,
+          title: isTierClosed ? `Reopen ${tierName}` : `Close ${tierName}`,
+          message: isTierClosed
+            ? `Do you want to reopen registration for ${tierName}?`
+            : `Do you want to close registration for ${tierName}?`,
+          registerClose: !isTierClosed,
+        });
+      } else {
+        setCloseAction({
+          key,
+          title: isRegistrationClosed ? 'Reopen  Registration' : 'Registration Closed',
+          message: isRegistrationClosed
+            ? 'Do you want to reopen registration for this event?'
+            : 'Do you want to close registration for this event?',
+          registerClose: !isRegistrationClosed,
+        });
+      }
     }
 
     if (key === 'complete') {
@@ -163,7 +176,16 @@ const EventDetailsView = () => {
       const body = {};
 
       if (closeAction.key === 'closed') {
-        body.registerClose = closeAction.registerClose;
+        if (closeAction.pricingTierId) {
+          // Toggle tier specific registerClose
+          body.pricingTiers = eventData.pricingTiers.map(tier => 
+            tier.id === closeAction.pricingTierId 
+              ? { ...tier, registerClose: closeAction.registerClose } 
+              : tier
+          );
+        } else {
+          body.registerClose = closeAction.registerClose;
+        }
       } else if (closeAction.key === 'complete') {
         body.complete = !event.complete;
       }
@@ -318,12 +340,53 @@ const EventDetailsView = () => {
             <div className="w-full md:flex-1 lg:w-full">
               <RegistrationStats stats={stats} />
             </div>
-            <div className="w-full md:flex-1 lg:w-full">
+            <div className="w-full md:flex-1 lg:w-full flex flex-col gap-4">
               <QuickActions
                 actions={quickActions}
-                setModalOpen={setModalOpen}
+                setModalOpen={() => { setModalOpen(true); setSelectedTierId(null); }}
                 onAction={handleQuickAction}
               />
+              {eventData.pricingTiers && eventData.pricingTiers.length > 0 && (
+                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <h3 className="mb-4 text-base font-bold text-gray-900">Tier Actions</h3>
+                  <div className="flex flex-col gap-4">
+                    {eventData.pricingTiers.map((tier) => (
+                      <div key={tier.id} className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-sm text-gray-800">{tier.name}</span>
+                          <span className="text-xs text-gray-500">${tier.price}</span>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={tier.registerClose || isEventComplete || isCapacityFull || event.complete}
+                          onClick={() => { setModalOpen(true); setSelectedTierId(tier.id); }}
+                          className={`w-full rounded-xl px-4 py-2 text-center text-xs font-semibold transition ${
+                            tier.registerClose || isEventComplete || isCapacityFull || event.complete
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                              : 'bg-green-500 text-white hover:bg-green-600'
+                          }`}
+                        >
+                          Add Participant
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isCapacityFull}
+                          onClick={() => handleQuickAction('closed', tier.id, tier.name, tier.registerClose)}
+                          className={`w-full rounded-xl px-4 py-2 text-center text-xs font-semibold transition ${
+                            isCapacityFull
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                              : tier.registerClose
+                                ? 'bg-green-500 text-white hover:bg-green-600'
+                                : 'bg-red-500 text-white hover:bg-red-600'
+                          }`}
+                        >
+                          {tier.registerClose ? 'Reopen' : 'Registration Closed'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         </div>
@@ -336,9 +399,14 @@ const EventDetailsView = () => {
       />
       <AddParticipantModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setSelectedTierId(null); }}
         eventId={eventId}
-        totalPrice={eventData.price || 0}
+        pricingTierId={selectedTierId}
+        totalPrice={
+          selectedTierId && eventData.pricingTiers
+            ? eventData.pricingTiers.find(t => t.id === selectedTierId)?.price || 0
+            : eventData.price || 0
+        }
         location={eventData.location || ''}
         onSuccess={handleParticipantAdded}
       />
