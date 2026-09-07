@@ -44,7 +44,7 @@ const EventDetailSkeleton = () => {
 
           <div className="my-5 border-t border-gray-100" />
 
-          {/* Date / Distance / Location row */}
+          {/* Date / Type of event / Location row */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Box className="h-4 w-24" />

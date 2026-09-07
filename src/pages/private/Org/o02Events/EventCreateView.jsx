@@ -7,7 +7,6 @@ import {
   Clock,
   MapPin,
   Users,
-  Ruler,
   DollarSign,
   Tag,
   Upload,
@@ -875,14 +874,13 @@ const EventCreateView = () => {
                   step={1}
                 />
               </Field>
-              <Field label="Distance" icon={Ruler}>
+              <Field label="Type of event" icon={Tag}>
                 <input
                   type="text"
                   value={form.distance}
                   onChange={set('distance')}
-                  placeholder="e.g., 5km Trail race or 10km Relay"
+                  placeholder="e.g., Running, Swimming, Seminar"
                   className={inputCls}
-                  step="any"
                 />
               </Field>
             </div>

@@ -55,7 +55,7 @@ const EventInfoPanel = ({ title, description, date, distance, location }) => {
           <div className="flex items-start gap-2">
             <MapPin size={15} className="mt-1.5 shrink-0 text-green-500" />
             <div>
-              <p className="font-semibold text-gray-800">Distance</p>
+              <p className="font-semibold text-gray-800">Type of event</p>
               <p className="text-gray-600">{distance}</p>
             </div>
           </div>

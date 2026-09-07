@@ -33,21 +33,13 @@ export const calculateSeatProgress = (availableSeats, totalSeats) => {
 };
 
 /**
- * Format distance for display.
- * - Appends "(km)" for numeric values.
- * - Keeps existing unit/text values unchanged.
+ * Format event type / legacy distance for display.
+ * Shows the organizer-entered value as-is (e.g. Running, 5km Trail).
  */
 export const formatDistanceValue = (value) => {
   const raw = String(value ?? '').trim();
   if (!raw || raw === '-') return '-';
-
-  const lower = raw.toLowerCase();
-  if (lower.includes('(km)')) return raw;
-
-  // Keep non-distance text as-is (e.g. "Best of 5", "90 min")
-  if (/[a-z]/i.test(raw)) return raw;
-
-  return `${raw}  (km)`;
+  return raw;
 };
 
 const COUNTRY_CODE_MAP = {

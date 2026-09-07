@@ -6,7 +6,6 @@ import {
   Clock,
   MapPin,
   Users,
-  Ruler,
   DollarSign,
   Tag,
   Upload,
@@ -171,12 +170,12 @@ const AddEventModal = ({ isOpen, onClose, initialData = null, onSubmit }) => {
               min={0}
             />
           </Field>
-          <Field label="Distance" icon={Ruler}>
+          <Field label="Type of event" icon={Tag}>
             <input
               type="text"
               value={form.distance}
               onChange={set('distance')}
-              placeholder="Distance (km)"
+              placeholder="e.g., Running, Swimming, Seminar"
               className={inputCls}
             />
           </Field>

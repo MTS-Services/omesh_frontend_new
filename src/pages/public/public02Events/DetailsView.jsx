@@ -309,13 +309,13 @@ const DetailsView = () => {
                   </span>
                 </div>
 
-                {/* Distance */}
+                {/* Type of event */}
                 <div className="flex flex-col">
                   <div className="mb-1 flex items-center gap-2 sm:mb-2">
-                    <MapPin className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
-                    <span className="font-semibold text-gray-900">Distance</span>
+                    <Info className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
+                    <span className="font-semibold text-gray-900">Type of event</span>
                   </div>
-                  <span className="ml-6 text-sm text-gray-600">{event.distance}</span>
+                  <span className="ml-6 text-sm text-gray-600">{event.distance || '-'}</span>
                 </div>
 
                 {/* Location - Full width */}
