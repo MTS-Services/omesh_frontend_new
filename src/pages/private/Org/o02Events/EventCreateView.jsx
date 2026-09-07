@@ -24,9 +24,11 @@ import {
   createEventService,
   uploadEventImages,
   updateEventService,
+  fetchEventDetails,
 } from '../../../../features/organizer/events/eventService';
 import MultipleImageUpload from '../../../../components/common/MultipleImageUpload';
 import { useEventsList } from '../../../../features/organizer/events/hooks';
+import { EVENT_COUNTRIES } from '../../../../constants/countries';
 
 const EMPTY_FORM = {
   title: '',
@@ -341,38 +343,67 @@ const EventCreateView = () => {
 
   const isEditing = Boolean(location.state?.event?.id);
 
+  const applyEventToForm = (event) => {
+    if (!event) return;
+    setForm(buildInitialForm(event));
+    setTShirtEnabled(hasTShirtConfiguration(event));
+    setIsFreeTShirt(inferIsFreeTShirt(event));
+    setUploadedImages([]);
+    const initialImages = Array.isArray(event?.tShirtImageUrl)
+      ? event.tShirtImageUrl
+      : event?.tShirtImageUrl
+        ? [event.tShirtImageUrl]
+        : [];
+    setTShirtImages(
+      initialImages
+        .filter(Boolean)
+        .map((value) => resolveImageUrl(value))
+        .filter(Boolean)
+    );
+    setTShirtImagePaths(initialImages.filter(Boolean));
+    if (event?.tShirtSizes) {
+      const sizes = event.tShirtSizes;
+      setSelectedSizes(
+        Array.isArray(sizes)
+          ? sizes.filter(Boolean)
+          : sizes
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+      );
+    }
+  };
+
   // If navigation provided an event (edit mode), ensure form updates when that event data arrives
   useEffect(() => {
     if (location.state?.event) {
-      setForm(buildInitialForm(location.state.event));
-      setTShirtEnabled(hasTShirtConfiguration(location.state.event));
-      setIsFreeTShirt(inferIsFreeTShirt(location.state.event));
-      setUploadedImages([]);
-      const initialImages = Array.isArray(location.state.event?.tShirtImageUrl)
-        ? location.state.event.tShirtImageUrl
-        : location.state.event?.tShirtImageUrl
-          ? [location.state.event.tShirtImageUrl]
-          : [];
-      setTShirtImages(
-        initialImages
-          .filter(Boolean)
-          .map((value) => resolveImageUrl(value))
-          .filter(Boolean)
-      );
-      setTShirtImagePaths(initialImages.filter(Boolean));
-      if (location.state.event?.tShirtSizes) {
-        const sizes = location.state.event.tShirtSizes;
-        setSelectedSizes(
-          Array.isArray(sizes)
-            ? sizes.filter(Boolean)
-            : sizes
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-        );
-      }
+      applyEventToForm(location.state.event);
     }
   }, [location.state?.event]);
+
+  // Always refetch full event on edit so pricing tiers / relations are complete
+  useEffect(() => {
+    const eventId = location.state?.event?.id;
+    if (!eventId) return undefined;
+
+    let isMounted = true;
+
+    const loadEventDetails = async () => {
+      try {
+        const details = await fetchEventDetails(eventId);
+        if (!isMounted || !details) return;
+        applyEventToForm(details);
+      } catch (error) {
+        console.error('Failed to load event details for edit:', error);
+      }
+    };
+
+    loadEventDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.state?.event?.id]);
 
 
   useEffect(() => {
@@ -823,8 +854,11 @@ const EventCreateView = () => {
               <Field label="Country" icon={MapPin}>
                 <select value={form.country} onChange={set('country')} className={inputCls}>
                   <option value="">Select country</option>
-                  <option value="Trinidad & Tobago">Trinidad & Tobago</option>
-                  <option value="Guyana">Guyana</option>
+                  {EVENT_COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.label}>
+                      {c.label}
+                    </option>
+                  ))}
                 </select>
               </Field>
             </div>

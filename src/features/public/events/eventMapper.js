@@ -1,17 +1,11 @@
 import { resolveImageUrl } from '../../../utils/images';
+import { resolveCountryCode } from '../../../constants/countries';
 
 const STATUS_DISPLAY_MAP = {
   SUSPENDED: 'Registration Closed',
   'REGISTRATION CLOSED': 'Registration Closed',
   COMPLETED: 'Sold Out',
   'SOLD OUT': 'Sold Out',
-};
-
-const COUNTRY_FLAG_MAP = {
-  bangladesh: 'bd',
-  guyana: 'gy',
-  'trinidad & tobago': 'tt',
-  'trinidad and tobago': 'tt',
 };
 
 const normalizeString = (value) => String(value ?? '').trim();
@@ -52,23 +46,15 @@ export const isValidEventId = (value) => {
 // };
 
 const mapFlagCode = (country, incomingFlag) => {
-  const normalizedFlag = normalizeString(incomingFlag).toLowerCase();
-  if (normalizedFlag === 'bd' || normalizedFlag === 'gy' || normalizedFlag === 'tt') {
-    return normalizedFlag;
+  const fromFlag = resolveCountryCode(incomingFlag);
+  if (fromFlag) return fromFlag;
+
+  // Legacy boolean "featured" flag — ignore and map from country name
+  if (typeof incomingFlag === 'boolean') {
+    return resolveCountryCode(country);
   }
 
-  const normalizedCountry = normalizeString(country).toLowerCase();
-  if (!normalizedCountry) return '';
-
-  if (COUNTRY_FLAG_MAP[normalizedCountry]) {
-    return COUNTRY_FLAG_MAP[normalizedCountry];
-  }
-
-  if (normalizedCountry.includes('bangladesh')) return 'bd';
-  if (normalizedCountry.includes('guyana')) return 'gy';
-  if (normalizedCountry.includes('trinidad') || normalizedCountry.includes('tobago')) return 'tt';
-
-  return '';
+  return resolveCountryCode(country);
 };
 
 const formatStartAt = (startAt) => {

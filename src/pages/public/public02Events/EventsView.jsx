@@ -4,23 +4,17 @@ import { Pagination } from '../../../components/ui';
 import EventCard from '../../../components/common/EventCard';
 import Skeleton from '../../../components/common/Skeleton';
 import { usePublicEventsList } from '../../../features/public/events/hooks';
+import { EVENT_COUNTRIES, resolveCountryCode } from '../../../constants/countries';
 
 const ITEMS_PER_PAGE = 8;
 
 const resolveCountryKey = (event) => {
-  const rawCountry = String(event?.country || '').trim().toLowerCase();
-  if (rawCountry.includes('guyana')) return 'gy';
-  if (rawCountry.includes('trinidad') || rawCountry.includes('tobago')) return 'tt';
-
-  const rawFlag = String(event?.flag || '').trim().toLowerCase();
-  if (rawFlag === 'gy') return 'gy';
-  if (rawFlag === 'tt') return 'tt';
-
-  const rawLocation = String(event?.location || '').trim().toLowerCase();
-  if (rawLocation.includes('guyana')) return 'gy';
-  if (rawLocation.includes('trinidad') || rawLocation.includes('tobago')) return 'tt';
-
-  return '';
+  return (
+    resolveCountryCode(event?.country) ||
+    resolveCountryCode(event?.flag) ||
+    resolveCountryCode(event?.location) ||
+    ''
+  );
 };
 
 const EventCardSkeleton = () => {
@@ -136,8 +130,11 @@ const EventsView = () => {
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none sm:w-60"
             >
               <option value="">All Countries</option>
-              <option value="tt">Trinidad & Tobago</option>
-              <option value="gy">Guyana</option>
+              {EVENT_COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

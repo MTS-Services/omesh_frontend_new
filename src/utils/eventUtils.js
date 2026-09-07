@@ -1,3 +1,5 @@
+import { COUNTRY_CODE_TO_LABEL, getCountryLabel } from '../constants/countries';
+
 /**
  * Filter events by status/tab
  * @param {Array} events - Array of event objects
@@ -51,9 +53,6 @@ export const formatDistanceValue = (value) => {
 const COUNTRY_CODE_MAP = {
   it: 'Italy',
   nl: 'Netherlands',
-  gy: 'Guyana',
-  tt: 'Trinidad and Tobago',
-  us: 'United States',
   gb: 'United Kingdom',
   ca: 'Canada',
   de: 'Germany',
@@ -63,6 +62,7 @@ const COUNTRY_CODE_MAP = {
   in: 'India',
   au: 'Australia',
   jp: 'Japan',
+  ...COUNTRY_CODE_TO_LABEL,
 };
 
 const CITY_COUNTRY_MAP = {
@@ -82,6 +82,9 @@ const CITY_COUNTRY_MAP = {
 const normalizeCountryName = (value) => {
   const raw = String(value || '').trim();
   if (!raw) return '';
+
+  const fromEventList = getCountryLabel(raw);
+  if (fromEventList && fromEventList !== raw) return fromEventList;
 
   const byCode = COUNTRY_CODE_MAP[raw.toLowerCase()];
   return byCode || raw;
