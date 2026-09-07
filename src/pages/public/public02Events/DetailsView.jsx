@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import {
   CalendarDays,
@@ -34,10 +34,37 @@ const DetailsView = () => {
 
   const [activeImgById, setActiveImgById] = useState({});
   const [quantity, setQuantity] = useState(1);
+  const [selectedPricingTierId, setSelectedPricingTierId] = useState('');
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const stripRef = useRef(null);
   const activeImg = activeImgById[eventId] ?? 0;
+
+  const pricingTiers = useMemo(
+    () => (Array.isArray(event?.pricingTiers) ? event.pricingTiers : []),
+    [event?.pricingTiers]
+  );
+  const selectableTiers = useMemo(() => {
+    const openTiers = pricingTiers.filter((tier) => !tier.registerClose);
+    return openTiers.length > 0 ? openTiers : pricingTiers;
+  }, [pricingTiers]);
+
+  useEffect(() => {
+    if (!selectableTiers.length) {
+      setSelectedPricingTierId('');
+      return;
+    }
+
+    setSelectedPricingTierId((prev) => {
+      if (prev && selectableTiers.some((tier) => tier.id === prev)) return prev;
+      return selectableTiers[0].id;
+    });
+  }, [event?.id, selectableTiers]);
+
+  const selectedPricingTier = selectableTiers.find((tier) => tier.id === selectedPricingTierId);
+  const displayPrice = selectedPricingTier
+    ? Number(selectedPricingTier.price)
+    : Number(event?.price || 0);
 
   const [copied, setCopied] = useState(false);
 
@@ -74,7 +101,7 @@ const DetailsView = () => {
           image: event.image,
           flag: event.flag,
           country: event.country,
-          price: event.price,
+          price: displayPrice,
           pricingTiers: event.pricingTiers,
           date: event.date,
           time: event.time,
@@ -88,6 +115,7 @@ const DetailsView = () => {
           tShirtPrice: event.tShirtPrice,
         },
         quantity,
+        selectedPricingTierId: selectedPricingTierId || selectableTiers[0]?.id || '',
       },
     });
   };
@@ -330,10 +358,54 @@ const DetailsView = () => {
                 </div>
               </div>
 
-              {/* Price */}
-              <h2 className="text-2xl text-green-500 sm:text-3xl">
-                ${event.price?.toLocaleString()} USD
-              </h2>
+              {/* Choose your ticket + Price */}
+              <div className="space-y-3">
+                {pricingTiers.length > 0 && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-gray-900 sm:text-base">
+                      Choose your ticket
+                    </h3>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {pricingTiers.map((tier) => {
+                        const isClosed = Boolean(tier.registerClose);
+                        const isSelected = selectedPricingTierId === tier.id;
+                        return (
+                          <button
+                            key={tier.id}
+                            type="button"
+                            disabled={isClosed}
+                            onClick={() => setSelectedPricingTierId(tier.id)}
+                            className={`rounded-lg border px-3 py-2.5 text-left transition ${
+                              isClosed
+                                ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-60'
+                                : isSelected
+                                  ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
+                                  : 'border-gray-200 bg-white hover:border-green-300'
+                            }`}
+                          >
+                            <span className="block text-sm font-semibold text-gray-900">
+                              {tier.name}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-gray-500 sm:text-sm">
+                              ${Number(tier.price).toLocaleString()} USD
+                              {isClosed ? ' · Closed' : ''}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <h2 className="text-2xl text-green-500 sm:text-3xl">
+                  ${displayPrice.toLocaleString()} USD
+                  {selectedPricingTier?.name ? (
+                    <span className="ml-2 text-sm font-medium text-gray-500 sm:text-base">
+                      · {selectedPricingTier.name}
+                    </span>
+                  ) : null}
+                </h2>
+              </div>
 
               <hr className="border-gray-200" />
 

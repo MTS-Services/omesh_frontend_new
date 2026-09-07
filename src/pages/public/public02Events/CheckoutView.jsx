@@ -60,7 +60,7 @@ const CheckoutView = () => {
     Array.from({ length: quantity }, emptyParticipant)
   );
   const [selectedPricingTierId, setSelectedPricingTierId] = useState(
-    () => pricingTiers[0]?.id || ''
+    () => state?.selectedPricingTierId || pricingTiers[0]?.id || ''
   );
   const [promoCode, setPromoCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
