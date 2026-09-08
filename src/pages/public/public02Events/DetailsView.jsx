@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import getFlagEmoji from '../../../components/common/FlagIcon';
 import { selectIsAuthenticated } from '../../../features/auth/selectors';
 import { usePublicEventDetails, usePublicEventsList } from '../../../features/public/events/hooks';
@@ -24,6 +24,8 @@ import EventDetailSkeleton from './Eventdetailskeleton';
 // ── Component ────────────────────────────────────────────────────────────────
 const DetailsView = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const shouldFocusTickets = searchParams.get('register') === '1';
   const eventId = String(id ?? '').trim();
 
   const { loading: listLoading } = usePublicEventsList();
@@ -37,7 +39,9 @@ const DetailsView = () => {
   const [selectedPricingTierId, setSelectedPricingTierId] = useState('');
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [highlightTickets, setHighlightTickets] = useState(false);
   const stripRef = useRef(null);
+  const ticketSectionRef = useRef(null);
   const activeImg = activeImgById[eventId] ?? 0;
 
   const pricingTiers = useMemo(
@@ -60,6 +64,23 @@ const DetailsView = () => {
       return selectableTiers[0].id;
     });
   }, [event?.id, selectableTiers]);
+
+  // Register Now lands here — scroll to ticket options (same place as View Details)
+  useEffect(() => {
+    if (!shouldFocusTickets || loading || !event) return undefined;
+
+    const timer = window.setTimeout(() => {
+      ticketSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightTickets(true);
+    }, 150);
+
+    const clearHighlight = window.setTimeout(() => setHighlightTickets(false), 2200);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(clearHighlight);
+    };
+  }, [shouldFocusTickets, loading, event?.id]);
 
   const selectedPricingTier = selectableTiers.find((tier) => tier.id === selectedPricingTierId);
   const displayPrice = selectedPricingTier
@@ -359,9 +380,15 @@ const DetailsView = () => {
               </div>
 
               {/* Choose your ticket + Price */}
-              <div className="space-y-3">
-                {pricingTiers.length > 0 && (
-                  <div>
+              <div
+                id="choose-ticket"
+                ref={ticketSectionRef}
+                className={`space-y-3 rounded-xl transition ${
+                  highlightTickets ? 'bg-green-50 ring-2 ring-green-400 ring-offset-2' : ''
+                }`}
+              >
+                {pricingTiers.length > 0 ? (
+                  <div className="p-1 sm:p-2">
                     <h3 className="mb-2 text-sm font-semibold text-gray-900 sm:text-base">
                       Choose your ticket
                     </h3>
@@ -395,7 +422,7 @@ const DetailsView = () => {
                       })}
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 <h2 className="text-2xl text-green-500 sm:text-3xl">
                   ${displayPrice.toLocaleString()} USD

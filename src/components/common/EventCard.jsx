@@ -2,11 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import getFlagEmoji from './FlagIcon';
-import { isAuthenticated } from '../../utils/auth';
 import { resolveImageUrl } from '../../utils/images';
 import { formatLocationWithCountry } from '../../utils/eventUtils';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '../../features/auth/selectors';
 
 const getBarColor = (availableSeats, totalSeats, status) => {
   if (status === 'Sold Out') return 'bg-[#EB4645]';
@@ -27,8 +24,8 @@ const getStatusStyle = (status) => {
 
 const EventCard = ({ event }) => {
   const detailsPath = `/events/${event.id}`;
+  const registerPath = `${detailsPath}?register=1`;
   const resolvedImage = resolveImageUrl(event.image);
-  const isAuth = useSelector(selectIsAuthenticated);
   const availableSeats = event.availableSeats ?? event.seats ?? 0;
   const totalSeats = Number(event.totalSeats) || 0;
   const soldSeats = Math.max(totalSeats - availableSeats, 0);
@@ -48,31 +45,18 @@ const EventCard = ({ event }) => {
     displayStatus === 'Sold Out' ||
     displayStatus === 'Registration Closed' ||
     event.status === 'COMPLETED';
-  const isLoggedIn = isAuthenticated();
-  const registerTo = isAuth ? '/events/checkout' : '/auth/register';
-  const registerState = isLoggedIn
-    ? {
-        event: {
-          id: event.id,
-          title: event.title,
-          image: resolveImageUrl(event.image),
-          flag: event.flag,
-          country: event.country,
-          price: event.price,
-          date: event.date,
-          time: event.time,
-          location: event.location,
-          seats: availableSeats,
-          totalSeats: event.totalSeats,
-          tShirtIncluded: event.tShirtIncluded,
-          tShirtImageUrls: event.tShirtImageUrls,
-          tShirtImageUrl: event.tShirtImageUrl,
-          tShirtSizes: event.tShirtSizes,
-          tShirtPrice: event.tShirtPrice,
-        },
-        quantity: 1,
-      }
-    : undefined;
+
+  const pricingTiers = Array.isArray(event.pricingTiers) ? event.pricingTiers : [];
+  const displayFee = (() => {
+    if (pricingTiers.length > 0) {
+      const prices = pricingTiers.map((tier) => Number(tier.price) || 0);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      if (minPrice === maxPrice) return `$${minPrice} USD`;
+      return `From $${minPrice} USD`;
+    }
+    return event.price ? `$${event.price} USD` : 'Free';
+  })();
 
   const capacityBg =
     displayStatus === 'Sold Out'
@@ -149,7 +133,7 @@ const EventCard = ({ event }) => {
               <span className="hidden md:block">Registration</span> Fee
             </span>
             <h3 className="text-sm font-bold text-[#1FB356] sm:text-xl">
-              {event.price ? `$${event.price} USD` : 'Free'}
+              {displayFee}
             </h3>
           </div>
 
@@ -169,8 +153,6 @@ const EventCard = ({ event }) => {
             </div>
           </div>
 
-          {/* [🔥 NEW LAYOUT] Full width clean Price Row right above the buttons */}
-
           {/* Buttons */}
           <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-2">
             <Link
@@ -181,8 +163,7 @@ const EventCard = ({ event }) => {
             </Link>
             {!isFull && (
               <Link
-                to={registerTo}
-                state={registerState}
+                to={registerPath}
                 className="w-full rounded-md border border-green-500 bg-[#1FB356] py-1.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#188a47] sm:py-2"
               >
                 Register Now
