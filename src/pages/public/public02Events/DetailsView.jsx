@@ -49,9 +49,16 @@ const DetailsView = () => {
     [event?.pricingTiers]
   );
   const selectableTiers = useMemo(() => {
-    const openTiers = pricingTiers.filter((tier) => !tier.registerClose);
-    return openTiers.length > 0 ? openTiers : pricingTiers;
+    return pricingTiers.filter((tier) => !tier.registerClose);
   }, [pricingTiers]);
+  const allTiersClosed =
+    pricingTiers.length > 0 && selectableTiers.length === 0;
+  const canRegister =
+    event?.status === 'APPROVED' &&
+    event?.availableSeats > 0 &&
+    !event?.registerClose &&
+    !allTiersClosed &&
+    (pricingTiers.length === 0 || Boolean(selectedPricingTierId));
 
   useEffect(() => {
     if (!selectableTiers.length) {
@@ -395,7 +402,7 @@ const DetailsView = () => {
                     <div className="grid gap-2 sm:grid-cols-2">
                       {pricingTiers.map((tier) => {
                         const isClosed = Boolean(tier.registerClose);
-                        const isSelected = selectedPricingTierId === tier.id;
+                        const isSelected = !isClosed && selectedPricingTierId === tier.id;
                         return (
                           <button
                             key={tier.id}
@@ -404,18 +411,33 @@ const DetailsView = () => {
                             onClick={() => setSelectedPricingTierId(tier.id)}
                             className={`rounded-lg border px-3 py-2.5 text-left transition ${
                               isClosed
-                                ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-60'
+                                ? 'cursor-not-allowed border-red-300 bg-red-50 text-red-800'
                                 : isSelected
                                   ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
                                   : 'border-gray-200 bg-white hover:border-green-300'
                             }`}
                           >
-                            <span className="block text-sm font-semibold text-gray-900">
-                              {tier.name}
+                            <span className="flex items-center justify-between gap-2">
+                              <span
+                                className={`block text-sm font-semibold ${
+                                  isClosed ? 'text-red-800' : 'text-gray-900'
+                                }`}
+                              >
+                                {tier.name}
+                              </span>
+                              {isClosed ? (
+                                <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-red-700 uppercase">
+                                  Closed
+                                </span>
+                              ) : null}
                             </span>
-                            <span className="mt-0.5 block text-xs text-gray-500 sm:text-sm">
+                            <span
+                              className={`mt-0.5 block text-xs sm:text-sm ${
+                                isClosed ? 'text-red-600' : 'text-gray-500'
+                              }`}
+                            >
                               ${Number(tier.price).toLocaleString()} USD
-                              {isClosed ? ' · Closed' : ''}
+                              {isClosed ? ' · Registration closed' : ''}
                             </span>
                           </button>
                         );
@@ -439,7 +461,7 @@ const DetailsView = () => {
               {/* Quantity + Register + Share */}
               <div className="flex items-center justify-between gap-2 sm:gap-3">
                 {/* Left group: Quantity + Register — only when registration is open */}
-                {event.status === 'APPROVED' && event.availableSeats > 0 && !event.registerClose ? (
+                {event.status === 'APPROVED' && event.availableSeats > 0 && !event.registerClose && !allTiersClosed ? (
                   <div className="flex items-center gap-2 sm:gap-4">
                     {/* Quantity Stepper */}
                     <div className="flex items-center overflow-hidden rounded-lg border border-gray-300">
@@ -470,7 +492,8 @@ const DetailsView = () => {
                       <button
                         type="button"
                         onClick={handleCheckout}
-                        className="rounded bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600"
+                        disabled={!canRegister}
+                        className="rounded bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         Checkout
                       </button>
@@ -485,14 +508,14 @@ const DetailsView = () => {
                   </div>
                 ) : (
                   <>
-                    {event.registerClose ? (
+                    {event.registerClose || allTiersClosed ? (
                       <>
                         <span
                           className={`rounded-md px-4 py-2 text-sm font-medium ${getStatusStyle(
                             'Sold Out'
                           )}`}
                         >
-                          Register Close
+                          Registration Closed
                         </span>
                       </>
                     ) : (

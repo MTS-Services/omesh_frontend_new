@@ -49,6 +49,12 @@ const CheckoutView = () => {
   const event = state?.event ?? null;
   const quantity = state?.quantity ?? 1;
   const pricingTiers = Array.isArray(event?.pricingTiers) ? event.pricingTiers : [];
+  const openPricingTiers = pricingTiers.filter((tier) => !tier.registerClose);
+  const initialTierId =
+    state?.selectedPricingTierId &&
+    openPricingTiers.some((tier) => tier.id === state.selectedPricingTierId)
+      ? state.selectedPricingTierId
+      : openPricingTiers[0]?.id || '';
 
   const getPaymentFailureState = (reason) => ({
     eventName: event?.title || event?.eventName || event?.name || 'your event',
@@ -59,9 +65,7 @@ const CheckoutView = () => {
   const [participants, setParticipants] = useState(() =>
     Array.from({ length: quantity }, emptyParticipant)
   );
-  const [selectedPricingTierId, setSelectedPricingTierId] = useState(
-    () => state?.selectedPricingTierId || pricingTiers[0]?.id || ''
-  );
+  const [selectedPricingTierId, setSelectedPricingTierId] = useState(() => initialTierId);
   const [promoCode, setPromoCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [platformFeePct, setPlatformFeePct] = useState(0);
@@ -566,6 +570,14 @@ const CheckoutView = () => {
       return;
     }
 
+    if (pricingTiers.length > 0) {
+      const selectedTier = pricingTiers.find((tier) => tier.id === selectedPricingTierId);
+      if (!selectedTier || selectedTier.registerClose) {
+        toast.error('This ticket tier is closed for registration.');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     const normalizedCode = promoCode.trim().toUpperCase();
@@ -707,31 +719,56 @@ const CheckoutView = () => {
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-gray-900">Choose your ticket</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {pricingTiers.map((tier) => (
-                    <label
-                      key={tier.id}
-                      className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition ${
-                        selectedPricingTierId === tier.id
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-green-300'
-                      }`}
-                    >
-                      <span>
-                        <span className="block text-sm font-semibold text-gray-900">{tier.name}</span>
-                        <span className="mt-1 block text-sm text-gray-500">
-                          ${Number(tier.price).toFixed(2)} USD per participant
+                  {pricingTiers.map((tier) => {
+                    const isClosed = Boolean(tier.registerClose);
+                    const isSelected = !isClosed && selectedPricingTierId === tier.id;
+                    return (
+                      <label
+                        key={tier.id}
+                        className={`flex items-center justify-between rounded-lg border p-4 transition ${
+                          isClosed
+                            ? 'cursor-not-allowed border-red-300 bg-red-50'
+                            : isSelected
+                              ? 'cursor-pointer border-green-500 bg-green-50'
+                              : 'cursor-pointer border-gray-200 hover:border-green-300'
+                        }`}
+                      >
+                        <span>
+                          <span
+                            className={`flex items-center gap-2 text-sm font-semibold ${
+                              isClosed ? 'text-red-800' : 'text-gray-900'
+                            }`}
+                          >
+                            {tier.name}
+                            {isClosed ? (
+                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-red-700 uppercase">
+                                Closed
+                              </span>
+                            ) : null}
+                          </span>
+                          <span
+                            className={`mt-1 block text-sm ${
+                              isClosed ? 'text-red-600' : 'text-gray-500'
+                            }`}
+                          >
+                            ${Number(tier.price).toFixed(2)} USD per participant
+                            {isClosed ? ' · Registration closed' : ''}
+                          </span>
                         </span>
-                      </span>
-                      <input
-                        type="radio"
-                        name="pricingTier"
-                        value={tier.id}
-                        checked={selectedPricingTierId === tier.id}
-                        onChange={() => setSelectedPricingTierId(tier.id)}
-                        className="h-4 w-4 accent-green-500"
-                      />
-                    </label>
-                  ))}
+                        <input
+                          type="radio"
+                          name="pricingTier"
+                          value={tier.id}
+                          disabled={isClosed}
+                          checked={isSelected}
+                          onChange={() => {
+                            if (!isClosed) setSelectedPricingTierId(tier.id);
+                          }}
+                          className="h-4 w-4 accent-green-500 disabled:cursor-not-allowed"
+                        />
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             )}
