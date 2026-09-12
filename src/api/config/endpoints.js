@@ -35,10 +35,13 @@ export const ENDPOINT = {
       DETAILS_API: '/api/v1/events',
 
       REGISTRATION: '/api/v1/event-registration',
+      // Uses PAYMENT_PROVIDER on backend (WIPAY | FYGARO)
       REGISTRATION2: '/api/v1/event-registration/fygaro-payment',
     },
     PAYMENT: {
       CAPTURE: '/api/v1/payment/capture',
+      WIPAY_CONFIRM: '/api/v1/payment/wipay/confirm',
+      FYGARO_CONFIRM: '/api/v1/payment/fygaro/confirm',
     },
      PLATFORM_SETTINGS: '/api/v1/platform-setting',
   },

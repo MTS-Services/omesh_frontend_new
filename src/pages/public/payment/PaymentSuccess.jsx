@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CalendarCheck2, CheckCircle2, Home, Loader2, AlertTriangle, Clock } from 'lucide-react';
 import { API_CONFIG } from '../../../api/config/constants';
@@ -14,34 +14,71 @@ const PaymentSuccess = () => {
   const { state } = useLocation();
   const [searchParams] = useSearchParams();
 
-  const batchId = searchParams.get('batchId') || searchParams.get('customReference');
+  const wipayStatus = searchParams.get('status');
+  const wipayOrderId = searchParams.get('order_id') || searchParams.get('orderId');
+  const wipayTransactionId =
+    searchParams.get('transaction_id') || searchParams.get('transactionId');
+  const wipayHash = searchParams.get('hash');
+  const isWiPayReturn = Boolean(wipayStatus || wipayTransactionId || wipayHash);
+
+  const batchId =
+    searchParams.get('batchId') ||
+    searchParams.get('customReference') ||
+    (isWiPayReturn ? wipayOrderId : null);
   const eventNameFromUrl = searchParams.get('eventName');
   const quantity = Number(state?.quantity || 1);
-  const missingBatchId = !batchId;
+  const missingBatchId = !batchId && !isWiPayReturn;
 
   const [status, setStatus] = useState(missingBatchId ? STATUS.SUCCESS : STATUS.LOADING);
   const [eventName, setEventName] = useState(eventNameFromUrl || '');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const hasConfirmed = useRef(false);
-
   useEffect(() => {
-    if (!batchId) {
+    if (!batchId && !isWiPayReturn) {
       return;
     }
 
-    if (hasConfirmed.current) return;
-    hasConfirmed.current = true;
-
     let cancelled = false;
 
-    async function confirmFygaroPayment() {
+    async function confirmPayment() {
       try {
-        const res = await fetch(`${API_CONFIG.BASE_URL}/api/v1/payment/fygaro/confirm`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ batchId }),
-        });
+        let res;
+
+        if (isWiPayReturn) {
+          if (String(wipayStatus || '').toLowerCase() !== 'success') {
+            if (!cancelled) {
+              setStatus(STATUS.ERROR);
+              setErrorMessage(
+                searchParams.get('message') ||
+                  'WiPay payment was not completed successfully.'
+              );
+            }
+            return;
+          }
+
+          res = await fetch(`${API_CONFIG.BASE_URL}/api/v1/payment/wipay/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              batchId: wipayOrderId || batchId,
+              order_id: wipayOrderId || batchId,
+              transaction_id: wipayTransactionId,
+              status: wipayStatus,
+              hash: wipayHash,
+              total: searchParams.get('total'),
+              currency: searchParams.get('currency'),
+              card: searchParams.get('card'),
+              message: searchParams.get('message'),
+              date: searchParams.get('date'),
+            }),
+          });
+        } else {
+          res = await fetch(`${API_CONFIG.BASE_URL}/api/v1/payment/fygaro/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batchId }),
+          });
+        }
 
         const json = await res.json().catch(() => null);
 
@@ -50,6 +87,9 @@ const PaymentSuccess = () => {
         if (res.ok && json?.success) {
           setStatus(STATUS.SUCCESS);
           if (json.data?.eventTitle) setEventName(json.data.eventTitle);
+          else if (json.data?.payment?.event?.title) {
+            setEventName(json.data.payment.event.title);
+          }
           return;
         }
 
@@ -68,12 +108,20 @@ const PaymentSuccess = () => {
       }
     }
 
-    confirmFygaroPayment();
+    confirmPayment();
 
     return () => {
       cancelled = true;
     };
-  }, [batchId]);
+  }, [
+    batchId,
+    isWiPayReturn,
+    searchParams,
+    wipayHash,
+    wipayOrderId,
+    wipayStatus,
+    wipayTransactionId,
+  ]);
 
   return (
     <section className="relative min-h-[calc(100vh-120px)] overflow-hidden bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
