@@ -177,12 +177,16 @@ const EventDetailsView = () => {
 
       if (closeAction.key === 'closed') {
         if (closeAction.pricingTierId) {
-          // Toggle tier specific registerClose
-          body.pricingTiers = eventData.pricingTiers.map(tier => 
-            tier.id === closeAction.pricingTierId 
-              ? { ...tier, registerClose: closeAction.registerClose } 
-              : tier
-          );
+          // Toggle tier specific registerClose — send only fields the API accepts
+          body.pricingTiers = eventData.pricingTiers.map((tier) => ({
+            id: tier.id,
+            name: tier.name,
+            price: Number(tier.price),
+            registerClose:
+              tier.id === closeAction.pricingTierId
+                ? closeAction.registerClose
+                : Boolean(tier.registerClose),
+          }));
         } else {
           body.registerClose = closeAction.registerClose;
         }
@@ -270,7 +274,7 @@ const EventDetailsView = () => {
     },
     {
       key: 'closed',
-      label: isRegistrationClosed ? 'Reopen' : 'Registration Closed',
+      label: isRegistrationClosed ? 'Reopen registration' : 'Close registration',
       tone: isRegistrationClosed ? 'success' : 'danger',
       disabled: isCapacityFull,
     },
@@ -351,7 +355,14 @@ const EventDetailsView = () => {
                   <h3 className="mb-4 text-base font-bold text-gray-900">Tier Actions</h3>
                   <div className="flex flex-col gap-4">
                     {eventData.pricingTiers.map((tier) => (
-                      <div key={tier.id} className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3">
+                      <div
+                        key={tier.id}
+                        className={`flex flex-col gap-2 rounded-xl p-3 ${
+                          tier.registerClose
+                            ? 'border border-red-200 bg-red-50'
+                            : 'bg-gray-50'
+                        }`}
+                      >
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-semibold text-sm text-gray-800">{tier.name}</span>
                           <span className="text-xs text-gray-500">${tier.price}</span>
@@ -380,7 +391,7 @@ const EventDetailsView = () => {
                                 : 'bg-red-500 text-white hover:bg-red-600'
                           }`}
                         >
-                          {tier.registerClose ? 'Reopen' : 'Registration Closed'}
+                          {tier.registerClose ? 'Reopen registration' : 'Close registration'}
                         </button>
                       </div>
                     ))}
