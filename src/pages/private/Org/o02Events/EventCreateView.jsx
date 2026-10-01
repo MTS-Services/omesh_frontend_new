@@ -180,6 +180,8 @@ const buildInitialForm = (event) => {
         id: tier.id,
         name: tier.name ?? '',
         price: String(tier.price ?? ''),
+        isGroup: Boolean(tier.isGroup),
+        groupSize: tier.isGroup && tier.groupSize ? String(tier.groupSize) : '',
       }))
     : [{ name: 'General Admission', price: String(event?.price ?? event?.ticketPrice ?? '') }];
 
@@ -453,7 +455,7 @@ const EventCreateView = () => {
   const addPricingTier = () => {
     setForm((prev) => ({
       ...prev,
-      pricingTiers: [...prev.pricingTiers, { name: '', price: '' }],
+      pricingTiers: [...prev.pricingTiers, { name: '', price: '', isGroup: false, groupSize: '' }],
     }));
   };
 
@@ -686,6 +688,8 @@ const EventCreateView = () => {
         ...(tier.id ? { id: tier.id } : {}),
         name: String(tier.name || '').trim(),
         price: Number(tier.price || 0),
+        isGroup: Boolean(tier.isGroup),
+        ...(tier.isGroup ? { groupSize: Number(tier.groupSize || 0) } : {}),
       }))
       .filter((tier) => tier.name);
 
@@ -729,6 +733,18 @@ const EventCreateView = () => {
 
     if (pricingTiers.length === 0 || pricingTiers.some((tier) => tier.price < 0)) {
       setSubmitError('Add at least one pricing tier with a valid price.');
+      return;
+    }
+
+    const invalidGroupTier = pricingTiers.find(
+      (tier) =>
+        tier.isGroup &&
+        (!Number.isInteger(tier.groupSize) || tier.groupSize < 2 || tier.groupSize > 100)
+    );
+    if (invalidGroupTier) {
+      setSubmitError(
+        `"${invalidGroupTier.name}" is a group tier. Set the number of members (2 to 100).`
+      );
       return;
     }
 
@@ -890,6 +906,9 @@ const EventCreateView = () => {
                 <div>
                   <h3 className="text-sm font-bold text-gray-900">Pricing Tiers</h3>
                   <p className="text-xs text-gray-500">Add the ticket names and prices available for this event.</p>
+                  <p className="text-xs text-gray-500">
+                    For a group ticket, turn on Group registration and enter the price for the whole group.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -902,38 +921,83 @@ const EventCreateView = () => {
               </div>
               <div className="space-y-3">
                 {form.pricingTiers.map((tier, index) => (
-                  <div key={tier.id || index} className="grid grid-cols-[minmax(0,1fr)_9rem_auto] items-end gap-2">
-                    <Field label={`Tier ${index + 1} Name`} icon={Tag}>
-                      <input
-                        type="text"
-                        value={tier.name}
-                        onChange={(e) => updatePricingTier(index, 'name', e.target.value)}
-                        placeholder="e.g. Early Bird"
-                        className={inputCls}
-                        required
-                      />
-                    </Field>
-                    <Field label="Price (USD)" icon={DollarSign}>
-                      <input
-                        type="number"
-                        value={tier.price}
-                        onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
-                        placeholder="0.00"
-                        className={inputCls}
-                        min={0}
-                        step="0.01"
-                        required
-                      />
-                    </Field>
-                    <button
-                      type="button"
-                      onClick={() => removePricingTier(index)}
-                      disabled={form.pricingTiers.length === 1}
-                      aria-label={`Remove tier ${index + 1}`}
-                      className="mb-0.5 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-red-200 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <X size={16} />
-                    </button>
+                  <div
+                    key={tier.id || index}
+                    className={`space-y-2 rounded-lg ${
+                      tier.isGroup ? 'border border-green-200 bg-green-50/60 p-2' : ''
+                    }`}
+                  >
+                    <div className="grid grid-cols-[minmax(0,1fr)_9rem_auto] items-end gap-2">
+                      <Field label={`Tier ${index + 1} Name`} icon={Tag}>
+                        <input
+                          type="text"
+                          value={tier.name}
+                          onChange={(e) => updatePricingTier(index, 'name', e.target.value)}
+                          placeholder="e.g. Early Bird"
+                          className={inputCls}
+                          required
+                        />
+                      </Field>
+                      <Field
+                        label={tier.isGroup ? 'Group Price (USD)' : 'Price (USD)'}
+                        icon={DollarSign}
+                      >
+                        <input
+                          type="number"
+                          value={tier.price}
+                          onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
+                          placeholder="0.00"
+                          className={inputCls}
+                          min={0}
+                          step="0.01"
+                          required
+                        />
+                      </Field>
+                      <button
+                        type="button"
+                        onClick={() => removePricingTier(index)}
+                        disabled={form.pricingTiers.length === 1}
+                        aria-label={`Remove tier ${index + 1}`}
+                        className="mb-0.5 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-red-200 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(tier.isGroup)}
+                          onChange={(e) => updatePricingTier(index, 'isGroup', e.target.checked)}
+                          className="h-4 w-4 accent-green-500"
+                        />
+                        Group registration
+                      </label>
+                      {tier.isGroup && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Users size={13} className="text-gray-500" />
+                            <span className="text-xs font-semibold text-gray-700">Members</span>
+                            <input
+                              type="number"
+                              value={tier.groupSize}
+                              onChange={(e) => updatePricingTier(index, 'groupSize', e.target.value)}
+                              placeholder="e.g. 5"
+                              min={2}
+                              max={100}
+                              step={1}
+                              required
+                              className="w-20 rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm focus:border-green-500 focus:outline-none"
+                            />
+                          </div>
+                          {Number(tier.groupSize) > 1 && Number(tier.price) > 0 && (
+                            <span className="text-xs text-gray-500">
+                              ${(Number(tier.price) / Number(tier.groupSize)).toFixed(2)} per person
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

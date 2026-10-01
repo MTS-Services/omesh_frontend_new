@@ -53,9 +53,14 @@ const DetailsView = () => {
   }, [pricingTiers]);
   const allTiersClosed =
     pricingTiers.length > 0 && selectableTiers.length === 0;
+  const selectedPricingTier = selectableTiers.find((tier) => tier.id === selectedPricingTierId);
+  const isGroupTier = Boolean(selectedPricingTier?.isGroup);
+  const ticketQuantity = isGroupTier ? selectedPricingTier.groupSize : quantity;
+  const hasEnoughSeats = (event?.availableSeats ?? 0) >= ticketQuantity;
   const canRegister =
     event?.status === 'APPROVED' &&
     event?.availableSeats > 0 &&
+    hasEnoughSeats &&
     !event?.registerClose &&
     !allTiersClosed &&
     (pricingTiers.length === 0 || Boolean(selectedPricingTierId));
@@ -89,7 +94,6 @@ const DetailsView = () => {
     };
   }, [shouldFocusTickets, loading, event?.id]);
 
-  const selectedPricingTier = selectableTiers.find((tier) => tier.id === selectedPricingTierId);
   const displayPrice = selectedPricingTier
     ? Number(selectedPricingTier.price)
     : Number(event?.price || 0);
@@ -429,6 +433,10 @@ const DetailsView = () => {
                                 <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-red-700 uppercase">
                                   Closed
                                 </span>
+                              ) : tier.isGroup ? (
+                                <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-green-700 uppercase">
+                                  Group of {tier.groupSize}
+                                </span>
                               ) : null}
                             </span>
                             <span
@@ -437,6 +445,9 @@ const DetailsView = () => {
                               }`}
                             >
                               ${Number(tier.price).toLocaleString()} USD
+                              {tier.isGroup
+                                ? ` for ${tier.groupSize} ($${(Number(tier.price) / tier.groupSize).toFixed(2)} per person)`
+                                : ''}
                               {isClosed ? ' · Registration closed' : ''}
                             </span>
                           </button>
@@ -451,9 +462,15 @@ const DetailsView = () => {
                   {selectedPricingTier?.name ? (
                     <span className="ml-2 text-sm font-medium text-gray-500 sm:text-base">
                       · {selectedPricingTier.name}
+                      {isGroupTier ? ` (group of ${selectedPricingTier.groupSize})` : ''}
                     </span>
                   ) : null}
                 </h2>
+                {isGroupTier && !hasEnoughSeats ? (
+                  <p className="text-sm font-medium text-red-600">
+                    Only {event.availableSeats} seat(s) left — not enough for this group ticket.
+                  </p>
+                ) : null}
               </div>
 
               <hr className="border-gray-200" />
@@ -463,29 +480,34 @@ const DetailsView = () => {
                 {/* Left group: Quantity + Register — only when registration is open */}
                 {event.status === 'APPROVED' && event.availableSeats > 0 && !event.registerClose && !allTiersClosed ? (
                   <div className="flex items-center gap-2 sm:gap-4">
-                    {/* Quantity Stepper */}
-                    <div className="flex items-center overflow-hidden rounded-lg border border-gray-300">
-                      <button
-                        type="button"
-                        onClick={dec}
-                        aria-label="Decrease quantity"
-                        className="px-2 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 active:bg-gray-200 sm:px-3 sm:py-2"
-                      >
-                        −
-                      </button>
-                      <span className="min-w-8 text-center text-xs font-semibold text-gray-800 select-none sm:min-w-10 sm:text-sm">
-                        {String(quantity).padStart(2, '0')}
+                    {isGroupTier ? (
+                      <span className="rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700 sm:text-sm">
+                        {selectedPricingTier.groupSize} members
                       </span>
-                      <button
-                        type="button"
-                        onClick={inc}
-                        aria-label="Increase quantity"
-                        disabled={quantity >= event.availableSeats}
-                        className="px-2 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 active:bg-gray-200 sm:px-3 sm:py-2"
-                      >
-                        +
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="flex items-center overflow-hidden rounded-lg border border-gray-300">
+                        <button
+                          type="button"
+                          onClick={dec}
+                          aria-label="Decrease quantity"
+                          className="px-2 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 active:bg-gray-200 sm:px-3 sm:py-2"
+                        >
+                          −
+                        </button>
+                        <span className="min-w-8 text-center text-xs font-semibold text-gray-800 select-none sm:min-w-10 sm:text-sm">
+                          {String(quantity).padStart(2, '0')}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={inc}
+                          aria-label="Increase quantity"
+                          disabled={quantity >= event.availableSeats}
+                          className="px-2 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 active:bg-gray-200 sm:px-3 sm:py-2"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
 
                     {/* Register Button */}
                     {isAuth ? (

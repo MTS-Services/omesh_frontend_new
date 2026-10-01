@@ -56,16 +56,25 @@ const CheckoutView = () => {
       ? state.selectedPricingTierId
       : openPricingTiers[0]?.id || '';
 
-  const getPaymentFailureState = (reason) => ({
-    eventName: event?.title || event?.eventName || event?.name || 'your event',
-    quantity,
-    reason,
-  });
+  const getParticipantCount = (tierId) => {
+    const tier = pricingTiers.find((t) => t.id === tierId);
+    return tier?.isGroup && tier.groupSize ? tier.groupSize : quantity;
+  };
 
   const [participants, setParticipants] = useState(() =>
-    Array.from({ length: quantity }, emptyParticipant)
+    Array.from({ length: getParticipantCount(initialTierId) }, emptyParticipant)
   );
   const [selectedPricingTierId, setSelectedPricingTierId] = useState(() => initialTierId);
+  const selectedPricingTier = pricingTiers.find((tier) => tier.id === selectedPricingTierId);
+  const isGroupTier = Boolean(selectedPricingTier?.isGroup && selectedPricingTier?.groupSize);
+  const participantCount = getParticipantCount(selectedPricingTierId);
+  const isGroupMember = (index) => isGroupTier && index > 0;
+
+  const getPaymentFailureState = (reason) => ({
+    eventName: event?.title || event?.eventName || event?.name || 'your event',
+    quantity: participantCount,
+    reason,
+  });
   const [promoCode, setPromoCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [platformFeePct, setPlatformFeePct] = useState(0);
@@ -108,6 +117,17 @@ const CheckoutView = () => {
       setPaypalOrderId(queryOrderId);
     }
   }, [paypalOrderId]);
+
+  useEffect(() => {
+    setParticipants((prev) => {
+      if (prev.length === participantCount) return prev;
+      if (prev.length > participantCount) return prev.slice(0, participantCount);
+      return [
+        ...prev,
+        ...Array.from({ length: participantCount - prev.length }, emptyParticipant),
+      ];
+    });
+  }, [participantCount]);
 
   useEffect(() => {
     const normalizedInput = promoCode.trim().toUpperCase();
@@ -183,9 +203,8 @@ const CheckoutView = () => {
     }
   };
 
-  const selectedPricingTier = pricingTiers.find((tier) => tier.id === selectedPricingTierId);
   const ticketPrice = selectedPricingTier ? Number(selectedPricingTier.price) : Number(event?.price || 0);
-  const subtotal = event ? ticketPrice * quantity : 0;
+  const subtotal = event ? (isGroupTier ? ticketPrice : ticketPrice * participantCount) : 0;
   const tshirtUnitPrice = Number(event?.tShirtPrice ?? 30);
   const selectedTShirtCount = participants.filter((p) => p.buyTShirt).length;
   const tShirtTotal = parseFloat((selectedTShirtCount * tshirtUnitPrice).toFixed(2));
@@ -284,36 +303,37 @@ const CheckoutView = () => {
   };
 
   const validateParticipants = () => {
-    const allValid = participants.every((p) => {
+    const allValid = participants.every((p, index) => {
+      const isMember = isGroupMember(index);
       const normalizedGender = String(p.gender || '')
         .trim()
         .toUpperCase();
       const hasRequired =
         p.firstName?.trim() &&
         p.lastName?.trim() &&
-        p.email?.trim() &&
-        p.phoneNumber?.trim() &&
         normalizedGender &&
         p.age &&
-        p.dateOfBirth?.trim();
+        (isMember || (p.email?.trim() && p.phoneNumber?.trim() && p.dateOfBirth?.trim()));
 
       if (!hasRequired) {
-        toast.error('Required fields');
+        toast.error(isMember ? `Fill in name, age and gender for member ${index + 1}` : 'Required fields');
         return false;
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(p.email)) {
-        toast.error('Invalid email');
-        return false;
-      }
+      if (!isMember) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(p.email)) {
+          toast.error('Invalid email');
+          return false;
+        }
 
-      const dateStr = p.dateOfBirth.trim();
-      const mmddyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-      const isoRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
-      if (!isoRegex.test(dateStr) && !mmddyyyy.test(dateStr)) {
-        toast.error('Invalid date');
-        return false;
+        const dateStr = p.dateOfBirth.trim();
+        const mmddyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+        const isoRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+        if (!isoRegex.test(dateStr) && !mmddyyyy.test(dateStr)) {
+          toast.error('Invalid date');
+          return false;
+        }
       }
 
       if (!['MALE', 'FEMALE'].includes(normalizedGender)) {
@@ -341,7 +361,8 @@ const CheckoutView = () => {
       totalPrice: grandTotal,
       // include couponCode at top-level when a promo is applied
       couponCode: promoApplied ? String(appliedPromoCode || '').trim() : '',
-      participants: participants.map((p) => {
+      participants: participants.map((p, index) => {
+        const isMember = isGroupMember(index);
         const rawDob = p.dateOfBirth.trim();
         const isoRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
         const mmddyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
@@ -361,8 +382,8 @@ const CheckoutView = () => {
         const participantPayload = {
           firstName: p.firstName.trim(),
           lastName: p.lastName.trim(),
-          email: p.email.trim().toLowerCase(),
-          phone: p.phoneNumber.trim(),
+          email: isMember ? '' : p.email.trim().toLowerCase(),
+          phone: isMember ? '' : p.phoneNumber.trim(),
           gender,
           age: parseInt(p.age, 10),
           dateOfBirth: isoDateOfBirth,
@@ -443,7 +464,7 @@ const CheckoutView = () => {
 
       toast.success('Payment complete');
       setPromoCode('');
-      setParticipants(Array.from({ length: quantity }, emptyParticipant));
+      setParticipants(Array.from({ length: participantCount }, emptyParticipant));
       setPaypalOrderId('');
       setPromoApplied(false);
       setAppliedPromoCode('');
@@ -453,7 +474,7 @@ const CheckoutView = () => {
         replace: true,
         state: {
           eventName: event?.title || event?.eventName || event?.name || 'your event',
-          quantity,
+          quantity: participantCount,
         },
       });
     } catch (error) {
@@ -609,13 +630,13 @@ const CheckoutView = () => {
         setPromoApplied(false);
         setPaypalOpen(false);
         setPaypalOrderId('');
-        setParticipants(Array.from({ length: quantity }, emptyParticipant));
+        setParticipants(Array.from({ length: participantCount }, emptyParticipant));
         setPromoCheckedCode('');
         navigate('/events/payment-success', {
           replace: true,
           state: {
             eventName: event?.title || event?.eventName || event?.name || 'your event',
-            quantity,
+            quantity: participantCount,
           },
         });
         return;
@@ -751,7 +772,9 @@ const CheckoutView = () => {
                               isClosed ? 'text-red-600' : 'text-gray-500'
                             }`}
                           >
-                            ${Number(tier.price).toFixed(2)} USD per participant
+                            {tier.isGroup && tier.groupSize
+                              ? `$${Number(tier.price).toFixed(2)} USD for a group of ${tier.groupSize} ($${(Number(tier.price) / tier.groupSize).toFixed(2)} per person)`
+                              : `$${Number(tier.price).toFixed(2)} USD per participant`}
                             {isClosed ? ' · Registration closed' : ''}
                           </span>
                         </span>
@@ -777,7 +800,13 @@ const CheckoutView = () => {
                 <div key={i} className="overflow-hidden rounded-lg bg-white shadow-sm">
                   {/* Participant Header */}
                   <div className="flex items-center justify-between bg-[#FFFBEB] px-6 py-2.5">
-                    <h2 className="text-base font-semibold text-gray-900">Participant {i + 1}</h2>
+                    <h2 className="text-base font-semibold text-gray-900">
+                      {isGroupTier
+                        ? i === 0
+                          ? 'Group Leader (Member 1)'
+                          : `Member ${i + 1}`
+                        : `Participant ${i + 1}`}
+                    </h2>
                     {p.tshirtName && (
                       <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                         <ShoppingBag size={12} className="mr-1" />
@@ -807,27 +836,33 @@ const CheckoutView = () => {
                     </div>
 
                     {/* Email & Phone Number */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <InputField
-                        label="Email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value={p.email}
-                        onChange={handleChange(i, 'email')}
-                        required
-                      />
-                      <InputField
-                        label="Phone Number"
-                        type="tel"
-                        placeholder="+1 (555) 123-4567"
-                        value={p.phoneNumber}
-                        onChange={handleChange(i, 'phoneNumber')}
-                        required
-                      />
-                    </div>
+                    {!isGroupMember(i) && (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <InputField
+                          label="Email"
+                          type="email"
+                          placeholder="john@example.com"
+                          value={p.email}
+                          onChange={handleChange(i, 'email')}
+                          required
+                        />
+                        <InputField
+                          label="Phone Number"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                          value={p.phoneNumber}
+                          onChange={handleChange(i, 'phoneNumber')}
+                          required
+                        />
+                      </div>
+                    )}
 
                     {/* Gender, Age, Date of Birth */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div
+                      className={`grid grid-cols-1 gap-4 ${
+                        isGroupMember(i) ? 'md:grid-cols-2' : 'md:grid-cols-3'
+                      }`}
+                    >
                       <SelectField
                         label="Gender"
                         options={genderOptions}
@@ -843,13 +878,15 @@ const CheckoutView = () => {
                         onChange={handleChange(i, 'age')}
                         required
                       />
-                      <InputField
-                        label="Date of Birth"
-                        type="date"
-                        value={p.dateOfBirth}
-                        onChange={handleChange(i, 'dateOfBirth')}
-                        required
-                      />
+                      {!isGroupMember(i) && (
+                        <InputField
+                          label="Date of Birth"
+                          type="date"
+                          value={p.dateOfBirth}
+                          onChange={handleChange(i, 'dateOfBirth')}
+                          required
+                        />
+                      )}
                     </div>
 
                     {/* T-Shirt Selection */}
@@ -872,22 +909,24 @@ const CheckoutView = () => {
                     )}
 
                     {/* Team / Club (optional) */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <InputField
-                        label="Team / Club (optional)"
-                        placeholder="Team name..."
-                        value={p.teamClub}
-                        onChange={handleChange(i, 'teamClub')}
-                      />
+                    {!isGroupMember(i) && (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <InputField
+                          label="Team / Club (optional)"
+                          placeholder="Team name..."
+                          value={p.teamClub}
+                          onChange={handleChange(i, 'teamClub')}
+                        />
 
-                      {/* Residential Area (optional) */}
-                      <InputField
-                        label="Residential Area (optional)"
-                        placeholder="Enter residential area..."
-                        value={p.residential_area}
-                        onChange={handleChange(i, 'residential_area')}
-                      />
-                    </div>
+                        {/* Residential Area (optional) */}
+                        <InputField
+                          label="Residential Area (optional)"
+                          placeholder="Enter residential area..."
+                          value={p.residential_area}
+                          onChange={handleChange(i, 'residential_area')}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -974,7 +1013,7 @@ const CheckoutView = () => {
                               className="flex items-center justify-between text-gray-600"
                             >
                               <span>
-                                Participant {idx + 1} ({p.tshirtName} - Size {p.tShirtSize})
+                                {isGroupTier ? 'Member' : 'Participant'} {idx + 1} ({p.tshirtName} - Size {p.tShirtSize})
                               </span>
                               <span className="font-semibold text-green-600">
                                 ${tshirtUnitPrice.toFixed(2)} USD
@@ -997,7 +1036,9 @@ const CheckoutView = () => {
                   {event && (
                     <div className="flex items-center justify-between text-gray-600">
                       <span>
-                        {selectedPricingTier?.name || 'Events'}: {ticketPrice.toLocaleString()} × {quantity}
+                        {isGroupTier
+                          ? `${selectedPricingTier.name}: group of ${participantCount}`
+                          : `${selectedPricingTier?.name || 'Events'}: ${ticketPrice.toLocaleString()} × ${participantCount}`}
                       </span>
                       <span className="font-semibold text-green-600">
                         ${subtotal.toLocaleString()} USD

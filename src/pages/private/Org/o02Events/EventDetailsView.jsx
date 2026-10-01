@@ -365,7 +365,10 @@ const EventDetailsView = () => {
                       >
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-semibold text-sm text-gray-800">{tier.name}</span>
-                          <span className="text-xs text-gray-500">${tier.price}</span>
+                          <span className="text-xs text-gray-500">
+                            ${tier.price}
+                            {tier.isGroup && tier.groupSize ? ` · Group of ${tier.groupSize}` : ''}
+                          </span>
                         </div>
                         <button
                           type="button"
