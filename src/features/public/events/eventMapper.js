@@ -175,6 +175,8 @@ export const mapPublicEvent = (rawEvent) => {
           name: normalizeString(tier?.name),
           price: toNumberOr(tier?.price, 0),
           registerClose: Boolean(tier?.registerClose),
+          isGroup: Boolean(tier?.isGroup) && toNumberOr(tier?.groupSize, 0) > 1,
+          groupSize: tier?.isGroup ? toNumberOr(tier?.groupSize, 0) : null,
         }))
         .filter((tier) => tier.name)
     : [];
