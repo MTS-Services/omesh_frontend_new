@@ -13,6 +13,9 @@ import TShirtSelector from '../../../components/ui/modals/TShirtSelector';
 
 const PAYPAL_CLIENT_ID = String(import.meta.env.VITE_PAYPAL_CLIENT_ID || '').trim();
 
+const PARTICIPANT_DECLARATION =
+  'I acknowledge that my participation in this event is voluntary and I am physically fit to participate. I agree to assume all risks associated with my participation and release the organizers, sponsors, and partners from any liability for personal injury, loss, or property damage. I also consent to the use of event photography and videography for promotional purposes. I also agree to all the terms at';
+
 const emptyParticipant = () => ({
   firstName: '',
   lastName: '',
@@ -88,6 +91,7 @@ const CheckoutView = () => {
   const [promoApplied, setPromoApplied] = useState(false);
   const [appliedPromoCode, setAppliedPromoCode] = useState('');
   const [promoCheckedCode, setPromoCheckedCode] = useState('');
+  const [declarationAccepted, setDeclarationAccepted] = useState(false);
 
   useEffect(() => {
     const fetchPlatformSettings = async () => {
@@ -361,6 +365,7 @@ const CheckoutView = () => {
       totalPrice: grandTotal,
       // include couponCode at top-level when a promo is applied
       couponCode: promoApplied ? String(appliedPromoCode || '').trim() : '',
+      declarationAccepted,
       participants: participants.map((p, index) => {
         const isMember = isGroupMember(index);
         const rawDob = p.dateOfBirth.trim();
@@ -585,6 +590,11 @@ const CheckoutView = () => {
     const allValid = validateParticipants();
 
     if (!allValid) return;
+
+    if (!declarationAccepted) {
+      toast.error('Please accept the Participant Declaration');
+      return;
+    }
 
     if (!event?.id) {
       toast.error('Missing event');
@@ -1098,22 +1108,38 @@ const CheckoutView = () => {
                 )}
               </div>
 
-              {/* Submit Button */}
+              {/* Participant Declaration + Submit Button */}
               <div className="p-6">
+                <label className="mb-4 flex cursor-pointer gap-3 rounded-lg border border-gray-200 bg-[#FFFBEB] p-4 text-xs leading-relaxed text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={declarationAccepted}
+                    onChange={(e) => setDeclarationAccepted(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-green-500"
+                  />
+                  <span>
+                    <span className="font-semibold text-gray-900">Participant Declaration: </span>
+                    {PARTICIPANT_DECLARATION}{' '}
+                    <Link
+                      to="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-green-600 underline"
+                    >
+                      Terms &amp; Conditions
+                    </Link>{' '}
+                    page.
+                  </span>
+                </label>
+
                 <button
                   type="button"
                   onClick={handleConfirm}
-                  disabled={isSubmitting}
-                  className="mb-3 w-full rounded-lg bg-green-500 py-3 font-semibold text-white shadow-md transition hover:bg-green-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSubmitting || !declarationAccepted}
+                  className="w-full rounded-lg bg-green-500 py-3 font-semibold text-white shadow-md transition hover:bg-green-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? 'Processing...' : 'Confirm '}
                 </button>
-
-                <Link to="/privacy" className="block">
-                  <p className="text-center text-xs text-gray-600 underline">
-                    By confirming, you agree to our terms and conditions
-                  </p>
-                </Link>
               </div>
             </div>
           </div>
