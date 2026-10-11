@@ -14,6 +14,7 @@ import {
   FileEdit,
   TicketPercent,
   NotebookText,
+  HeartHandshake,
 } from 'lucide-react';
 import { useCurrentUser } from '../../../hooks/useRoleAccess.js';
 import { ROLES } from '../../../utils/auth';
@@ -25,6 +26,7 @@ const adminMenuItems = [
   { name: 'Training plan', path: '/dash/training-plan', icon: Dumbbell, end: false },
   { name: 'Payout request', path: '/dash/payout-request', icon: DollarSign, end: false },
   { name: 'Organizer toolkit', path: '/dash/toolkit', icon: Calendar, end: false },
+  { name: 'Sponsors & Donations', path: '/dash/sponsors', icon: HeartHandshake, end: false },
   { name: 'Settings', path: '/dash/settings', icon: Settings, end: false },
   { name: 'Profile', path: '/dash/profile', icon: Users, end: false },
 ];
