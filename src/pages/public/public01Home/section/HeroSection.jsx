@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { HeartHandshake } from 'lucide-react';
 import { selectUserRole } from '../../../../features/auth/selectors';
 import { ROLES, getDashboardPathByRole } from '../../../../utils/auth';
 
@@ -57,6 +58,13 @@ const HeroSection = () => {
           >
             Organize an Event
           </button>
+          <Link
+            to="/sponsor"
+            className="inline-flex items-center gap-2 rounded-md bg-white px-6 py-2.5 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 sm:px-8 sm:py-3"
+          >
+            <HeartHandshake className="h-4 w-4 text-[#1FB356]" />
+            Sponsor / Donate
+          </Link>
         </div>
       </div>
     </section>

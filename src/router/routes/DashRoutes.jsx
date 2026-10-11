@@ -23,6 +23,9 @@ const AdminPayoutView = lazy(
 const AdminToolkitView = lazy(() => import('../../pages/private/Admin/a05Toolkit/ToolkitView'));
 const AdminSettingsView = lazy(() => import('../../pages/private/Admin/a06Settings/SettingsView'));
 const AdminProfileView = lazy(() => import('../../pages/private/Admin/a07Profile/ProfileView'));
+const AdminSponsorRequestsView = lazy(
+  () => import('../../pages/private/Admin/a08Sponsors/SponsorRequestsView')
+);
 
 export const dashRoutes = [
   { path: '', index: true, element: <AdminHomeView /> },
@@ -34,6 +37,7 @@ export const dashRoutes = [
   { path: 'payout-request', element: <AdminPayoutView /> },
   { path: 'organizer', element: <UserPageView /> },
   { path: 'toolkit', element: <AdminToolkitView /> },
+  { path: 'sponsors', element: <AdminSponsorRequestsView /> },
   { path: 'settings', element: <AdminSettingsView /> },
   { path: 'profile', element: <AdminProfileView /> },
 ];
