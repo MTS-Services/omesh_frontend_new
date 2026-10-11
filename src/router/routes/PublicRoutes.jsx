@@ -12,6 +12,10 @@ const TrainingDetailsView = lazy(
 const AboutView = lazy(() => import('../../pages/public/public05About/AboutView'));
 const FaqView = lazy(() => import('../../pages/public/public06FAQ/FaqView'));
 const TermsView = lazy(() => import('../../pages/public/Terms'));
+const SponsorView = lazy(() => import('../../pages/public/public07Sponsor/SponsorView'));
+const SponsorPaymentResult = lazy(
+  () => import('../../pages/public/public07Sponsor/SponsorPaymentResult')
+);
 const PaymentSuccess = lazy(() => import('../../pages/public/payment/PaymentSuccess'));
 const PaymentFailed = lazy(() => import('../../pages/public/payment/PaymentFailed'));
 
@@ -31,4 +35,6 @@ export const publicRoutes = [
   { path: 'faq', element: <FaqView /> },
   { path: 'terms', element: <TermsView /> },
   { path: 'privacy', element: <TermsView /> },
+  { path: 'sponsor', element: <SponsorView /> },
+  { path: 'sponsor/payment-success', element: <SponsorPaymentResult /> },
 ];
