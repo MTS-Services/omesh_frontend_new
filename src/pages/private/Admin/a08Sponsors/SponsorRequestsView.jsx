@@ -12,6 +12,7 @@ import {
   HeartHandshake,
   Building2,
   HandCoins,
+  Gift,
   X,
   Trash2,
   AlertTriangle,
@@ -29,23 +30,30 @@ const FILTERS = [
   { value: 'ALL', label: 'All' },
   { value: 'SPONSORSHIP', label: 'Sponsorship' },
   { value: 'DONATION', label: 'Donation' },
+  { value: 'IN_KIND', label: 'Hampers / Vouchers' },
 ];
 
 const formatDate = (isoDate) => (isoDate ? new Date(isoDate).toLocaleDateString() : '-');
 const formatAmount = (amount) => (amount != null ? `$${Number(amount).toFixed(2)}` : '-');
 
-const TypeBadge = ({ type }) =>
-  type === 'DONATION' ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-      <HandCoins size={12} />
-      Donation
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-      <Building2 size={12} />
-      Sponsorship
+const TYPE_BADGES = {
+  SPONSORSHIP: { label: 'Sponsorship', icon: Building2, className: 'bg-blue-50 text-blue-700' },
+  DONATION: { label: 'Donation', icon: HandCoins, className: 'bg-green-50 text-green-700' },
+  IN_KIND: { label: 'Hampers / Vouchers', icon: Gift, className: 'bg-purple-50 text-purple-700' },
+};
+
+const TypeBadge = ({ type }) => {
+  const badge = TYPE_BADGES[type] || TYPE_BADGES.SPONSORSHIP;
+  const Icon = badge.icon;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${badge.className}`}
+    >
+      <Icon size={12} />
+      {badge.label}
     </span>
   );
+};
 
 const PAYMENT_BADGES = {
   SUCCEEDED: { label: 'Paid', className: 'bg-green-100 text-green-700' },
@@ -117,9 +125,14 @@ const RequestModal = ({ request, onClose }) => {
           <DetailRow icon={Ticket} color="bg-orange-50 text-orange-500" label="Event">
             {request.eventName || 'General support'}
           </DetailRow>
+          {request.supportType === 'IN_KIND' && (
+            <DetailRow icon={Gift} color="bg-purple-50 text-purple-500" label="Items Offered">
+              <span className="whitespace-pre-line">{request.itemDescription || '-'}</span>
+            </DetailRow>
+          )}
           <DetailRow icon={DollarSign} color="bg-emerald-50 text-emerald-500" label="Amount">
             <span className="flex items-center gap-2">
-              {formatAmount(request.amount)}
+              {request.amount != null ? formatAmount(request.amount) : 'No payment'}
               <PaymentBadge status={request.paymentStatus} />
             </span>
           </DetailRow>
@@ -260,7 +273,13 @@ const SponsorRequestsView = () => {
   }, [page, filter, reloadKey]);
 
   const { rows, meta } = state;
-  const stats = state.stats || { total: 0, sponsorships: 0, donations: 0, totalReceived: 0 };
+  const stats = state.stats || {
+    total: 0,
+    sponsorships: 0,
+    donations: 0,
+    inKind: 0,
+    totalReceived: 0,
+  };
   const handleFilterChange = (value) => {
     if (value === filter) return;
     setFilter(value);
@@ -295,7 +314,7 @@ const SponsorRequestsView = () => {
     <div>
       <h1 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">Sponsors &amp; Donations</h1>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label="Total Requests"
           value={stats.total}
@@ -313,6 +332,12 @@ const SponsorRequestsView = () => {
           value={stats.donations}
           icon={HandCoins}
           color="bg-green-50 text-green-500"
+        />
+        <StatCard
+          label="Hampers / Vouchers"
+          value={stats.inKind}
+          icon={Gift}
+          color="bg-purple-50 text-purple-500"
         />
         <StatCard
           label="Total Received"
@@ -347,7 +372,7 @@ const SponsorRequestsView = () => {
                 <th className="px-6 py-3 font-medium">Type</th>
                 <th className="px-6 py-3 font-medium">Contact</th>
                 <th className="px-6 py-3 font-medium">Event</th>
-                <th className="px-6 py-3 font-medium">Amount</th>
+                <th className="px-6 py-3 font-medium">Amount / Items</th>
                 <th className="px-6 py-3 font-medium">Payment</th>
                 <th className="px-6 py-3 font-medium">Date</th>
                 <th className="px-6 py-3 text-center font-medium">Action</th>
@@ -387,8 +412,16 @@ const SponsorRequestsView = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                       {row.eventName || 'General support'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                      {formatAmount(row.amount)}
+                    <td className="px-6 py-4 text-gray-800">
+                      <span className="whitespace-nowrap">{formatAmount(row.amount)}</span>
+                      {row.supportType === 'IN_KIND' && (
+                        <span
+                          className="block max-w-48 truncate text-xs text-gray-500"
+                          title={row.itemDescription || ''}
+                        >
+                          {row.itemDescription || '-'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <PaymentBadge status={row.paymentStatus} />

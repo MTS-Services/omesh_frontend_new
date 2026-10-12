@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   HeartHandshake,
   Building2,
   HandCoins,
+  Gift,
+  CheckCircle2,
   Lock,
   Loader2,
   User,
@@ -26,6 +29,12 @@ const SUPPORT_TYPES = [
     description: 'Make a one-time donation to support an event.',
     icon: HandCoins,
   },
+  {
+    value: 'IN_KIND',
+    title: 'Hampers / Vouchers / Products',
+    description: 'Give items instead of money. No payment needed.',
+    icon: Gift,
+  },
 ];
 
 const PRESET_AMOUNTS = [25, 50, 100, 250];
@@ -33,6 +42,7 @@ const PRESET_AMOUNTS = [25, 50, 100, 250];
 const initialForm = {
   supportType: 'SPONSORSHIP',
   amount: '',
+  itemDescription: '',
   name: '',
   phone: '',
   email: '',
@@ -46,8 +56,11 @@ const inputClass =
 const SponsorView = () => {
   const [formData, setFormData] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inKindSubmitted, setInKindSubmitted] = useState(false);
 
+  const isInKind = formData.supportType === 'IN_KIND';
   const amountNumber = Number(formData.amount);
+  const needsPayment = !isInKind || amountNumber > 0;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,22 +74,40 @@ const SponsorView = () => {
       toast.error('Please fill in all required fields.');
       return;
     }
-    if (!(amountNumber > 0)) {
+    if (isInKind && !formData.itemDescription.trim()) {
+      toast.error('Please tell us what you would like to give.');
+      return;
+    }
+    if (!isInKind && !(amountNumber > 0)) {
       toast.error('Please enter an amount.');
       return;
     }
+    if (formData.amount !== '' && !(amountNumber > 0)) {
+      toast.error('Please enter a valid amount.');
+      return;
+    }
+
+    const payload = {
+      supportType: formData.supportType,
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      eventName: formData.eventName.trim(),
+      message: formData.message.trim(),
+      ...(isInKind ? { itemDescription: formData.itemDescription.trim() } : {}),
+      ...(amountNumber > 0 ? { amount: Number(amountNumber.toFixed(2)) } : {}),
+    };
 
     setIsSubmitting(true);
     try {
-      const response = await createSponsorRequest({
-        supportType: formData.supportType,
-        name: formData.name.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        eventName: formData.eventName.trim(),
-        message: formData.message.trim(),
-        amount: Number(amountNumber.toFixed(2)),
-      });
+      const response = await createSponsorRequest(payload);
+
+      if (!needsPayment) {
+        setInKindSubmitted(true);
+        setFormData(initialForm);
+        setIsSubmitting(false);
+        return;
+      }
 
       const paymentUrl = response?.data?.paymentUrl;
       if (!paymentUrl) {
@@ -84,10 +115,33 @@ const SponsorView = () => {
       }
       window.location.href = paymentUrl;
     } catch (error) {
-      toast.error(error?.message || 'Could not start the payment. Please try again.');
+      toast.error(error?.message || 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };
+
+  if (inKindSubmitted) {
+    return (
+      <section className="bg-white px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white px-8 py-12 text-center shadow-sm">
+          <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-500">
+            <CheckCircle2 className="h-9 w-9" />
+          </span>
+          <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">Thank You!</h1>
+          <p className="mb-8 text-sm text-gray-600 sm:text-base">
+            Your request has been received. Our team will contact you shortly to arrange it. We
+            truly appreciate your support.
+          </p>
+          <Link
+            to="/"
+            className="rounded-lg bg-[#1FB356] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#188a47]"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-white px-4 py-14 sm:px-6 md:py-16 lg:px-8">
@@ -114,7 +168,7 @@ const SponsorView = () => {
             <legend className="mb-3 text-sm font-semibold text-gray-800">
               1. How would you like to support? <span className="text-red-500">*</span>
             </legend>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               {SUPPORT_TYPES.map(({ value, title, description, icon }) => {
                 const Icon = icon;
                 const active = formData.supportType === value;
@@ -227,9 +281,36 @@ const SponsorView = () => {
               </div>
             </div>
 
+            {isInKind && (
+              <div>
+                <label
+                  htmlFor="itemDescription"
+                  className="mb-2 block text-sm font-semibold text-gray-800"
+                >
+                  6. What would you like to give? <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="itemDescription"
+                  name="itemDescription"
+                  rows="3"
+                  value={formData.itemDescription}
+                  onChange={handleChange}
+                  placeholder="e.g. 10 gift hampers, 5 × $50 vouchers, running shoes..."
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+            )}
+
             <div>
               <p className="mb-2 text-sm font-semibold text-gray-800">
-                6. Amount (USD) <span className="text-red-500">*</span>
+                {isInKind ? '7.' : '6.'} Amount (USD){' '}
+                {isInKind ? (
+                  <span className="font-normal text-gray-500">
+                    (optional, leave empty if you are only giving items)
+                  </span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </p>
               <div className="mb-3 grid grid-cols-4 gap-2">
                 {PRESET_AMOUNTS.map((amount) => {
@@ -238,7 +319,12 @@ const SponsorView = () => {
                     <button
                       key={amount}
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, amount: String(amount) }))}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          amount: active && isInKind ? '' : String(amount),
+                        }))
+                      }
                       className={`rounded-lg border py-2.5 text-sm font-semibold transition-colors ${
                         active
                           ? 'border-green-500 bg-green-500 text-white'
@@ -269,7 +355,7 @@ const SponsorView = () => {
 
             <div>
               <label htmlFor="message" className="mb-2 block text-sm font-semibold text-gray-800">
-                7. Message / Additional Details
+                {isInKind ? '8.' : '7.'} Message / Additional Details
               </label>
               <textarea
                 id="message"
@@ -277,7 +363,7 @@ const SponsorView = () => {
                 rows="4"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your sponsorship or donation..."
+                placeholder="Tell us about your sponsorship, donation, or items..."
                 className={`${inputClass} resize-none`}
               />
             </div>
@@ -291,17 +377,21 @@ const SponsorView = () => {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Redirecting to WiPay...
+                {needsPayment ? 'Redirecting to WiPay...' : 'Submitting...'}
               </>
-            ) : (
+            ) : needsPayment ? (
               `Continue to Payment${amountNumber > 0 ? ` · $${amountNumber.toFixed(2)}` : ''}`
+            ) : (
+              'Submit'
             )}
           </button>
 
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-500">
-            <Lock className="h-3.5 w-3.5" />
-            Secure payment powered by WiPay
-          </p>
+          {needsPayment && (
+            <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-500">
+              <Lock className="h-3.5 w-3.5" />
+              Secure payment powered by WiPay
+            </p>
+          )}
         </form>
       </div>
     </section>
