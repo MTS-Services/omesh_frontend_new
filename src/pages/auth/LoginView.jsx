@@ -82,9 +82,9 @@ const LoginView = () => {
 
               {/* Sign Up Link */}
               <p className="mt-2 text-center text-sm text-gray-400">
-                Don't have an account?{' '}
+                Want to host events?{' '}
                 <Link to="/auth/register" className="text-[#1FB356] hover:underline">
-                  Sign Up
+                  Sign up as an organizer
                 </Link>
               </p>
             </div>
