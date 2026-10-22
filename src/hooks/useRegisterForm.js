@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -38,11 +38,9 @@ const uploadSingleImage = async (file) => {
  */
 export const useRegisterForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { register, loading, error } = useRegister();
 
-  const initialRole = location.state?.role === 'ORGANIZER' ? 'ORGANIZER' : 'USER';
-
+  // Public sign up is for organizers only; users check out as guests.
   const createInitialFormData = useCallback(
     () => ({
       fullName: '',
@@ -50,10 +48,10 @@ export const useRegisterForm = () => {
       phoneNumber: '',
       password: '',
       confirmPassword: '',
-      role: initialRole,
+      role: 'ORGANIZER',
       termsAccepted: false,
     }),
-    [initialRole]
+    []
   );
 
   // Form state
