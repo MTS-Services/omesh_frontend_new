@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import getFlagEmoji from '../../../components/common/FlagIcon';
-import { selectIsAuthenticated } from '../../../features/auth/selectors';
 import { usePublicEventDetails, usePublicEventsList } from '../../../features/public/events/hooks';
 import { selectPublicEventById } from '../../../features/public/events/selectors';
 import { resolveImageUrl } from '../../../utils/images';
@@ -51,8 +50,7 @@ const DetailsView = () => {
   const selectableTiers = useMemo(() => {
     return pricingTiers.filter((tier) => !tier.registerClose);
   }, [pricingTiers]);
-  const allTiersClosed =
-    pricingTiers.length > 0 && selectableTiers.length === 0;
+  const allTiersClosed = pricingTiers.length > 0 && selectableTiers.length === 0;
   const selectedPricingTier = selectableTiers.find((tier) => tier.id === selectedPricingTierId);
   const isGroupTier = Boolean(selectedPricingTier?.isGroup);
   const ticketQuantity = isGroupTier ? selectedPricingTier.groupSize : quantity;
@@ -121,7 +119,6 @@ const DetailsView = () => {
     window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
   };
 
-  const isAuth = useSelector(selectIsAuthenticated);
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -478,7 +475,10 @@ const DetailsView = () => {
               {/* Quantity + Register + Share */}
               <div className="flex items-center justify-between gap-2 sm:gap-3">
                 {/* Left group: Quantity + Register — only when registration is open */}
-                {event.status === 'APPROVED' && event.availableSeats > 0 && !event.registerClose && !allTiersClosed ? (
+                {event.status === 'APPROVED' &&
+                event.availableSeats > 0 &&
+                !event.registerClose &&
+                !allTiersClosed ? (
                   <div className="flex items-center gap-2 sm:gap-4">
                     {isGroupTier ? (
                       <span className="rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700 sm:text-sm">
@@ -510,23 +510,14 @@ const DetailsView = () => {
                     )}
 
                     {/* Register Button */}
-                    {isAuth ? (
-                      <button
-                        type="button"
-                        onClick={handleCheckout}
-                        disabled={!canRegister}
-                        className="rounded bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Checkout
-                      </button>
-                    ) : (
-                      <Link
-                        to="/auth/login"
-                        className="rounded bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600"
-                      >
-                        Checkout
-                      </Link>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleCheckout}
+                      disabled={!canRegister}
+                      className="rounded bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Checkout
+                    </button>
                   </div>
                 ) : (
                   <>

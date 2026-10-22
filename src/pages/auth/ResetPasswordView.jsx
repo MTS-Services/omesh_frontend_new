@@ -35,7 +35,7 @@ const ResetPasswordView = () => {
 
     try {
       const response = await forgotPassword(email);
-      
+
       if (response && response.success) {
         toast.success('Check your email for the verification code');
         // Pass email to next page
@@ -70,7 +70,6 @@ const ResetPasswordView = () => {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="mb-3 text-2xl font-bold text-gray-800 md:text-3xl">Forgot Password</h1>
-       
           </div>
 
           {/* Form */}
@@ -104,7 +103,7 @@ const ResetPasswordView = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-green-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-green-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Send Reset Code'}
             </button>
@@ -113,9 +112,9 @@ const ResetPasswordView = () => {
             <div className="mt-4">
               {/* Sign Up Link */}
               <p className="mt-2 text-center text-sm text-gray-400">
-                Don't have an account?{' '}
+                Want to host events?{' '}
                 <Link to="/auth/register" className="text-[#1FB356] hover:underline">
-                  Sign Up
+                  Sign up as an organizer
                 </Link>
               </p>
               <div className="mt-4 flex items-center gap-3">

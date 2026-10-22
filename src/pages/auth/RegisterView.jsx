@@ -52,7 +52,7 @@ const RegisterView = () => {
               Personal Information
             </h2>
             <p className="text-xs text-gray-600 md:text-sm">
-              Provide your basic personal details to create your user profile.
+              Provide your basic personal details to create your organizer account.
             </p>
 
             {/* Error Banner */}
@@ -68,41 +68,14 @@ const RegisterView = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
-            {/* Profile Photo with Role Toggle */}
+            {/* Profile Photo */}
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
               <div className="flex items-start justify-between gap-4">
-                {/* Profile Photo - Left Side */}
                 <ProfilePhotoUpload profilePhoto={profilePhoto} onPhotoUpload={handlePhotoUpload} />
 
-                {/* Role Toggle - Right Side */}
-                <div className="flex flex-1 flex-col items-end justify-start">
-                  <label className="mb-2 flex cursor-pointer items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Are you an organizer?</span>
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        name="role"
-                        checked={formData.role === 'ORGANIZER'}
-                        onChange={(e) => {
-                          handleChange({
-                            target: {
-                              name: 'role',
-                              value: e.target.checked ? 'ORGANIZER' : 'USER',
-                            },
-                          });
-                        }}
-                        className="peer sr-only"
-                      />
-                      <div className="h-6 w-11 rounded-full bg-gray-300 transition-colors peer-checked:bg-green-500"></div>
-                      <div className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"></div>
-                    </div>
-                  </label>
-                  {formData.role === 'ORGANIZER' && (
-                    <span className="mt-1 text-xs font-medium text-green-600">
-                      ✓ Organizer account
-                    </span>
-                  )}
-                </div>
+                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
+                  ✓ Organizer account
+                </span>
               </div>
             </div>
 

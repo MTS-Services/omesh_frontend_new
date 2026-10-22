@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CalendarCheck2, CheckCircle2, Home, Loader2, AlertTriangle, Clock } from 'lucide-react';
 import { API_CONFIG } from '../../../api/config/constants';
+import { useCurrentUser } from '../../../hooks/useRoleAccess';
+import { ROLES } from '../../../utils/auth';
 
 const STATUS = {
   LOADING: 'loading',
@@ -49,8 +51,7 @@ const PaymentSuccess = () => {
             if (!cancelled) {
               setStatus(STATUS.ERROR);
               setErrorMessage(
-                searchParams.get('message') ||
-                  'WiPay payment was not completed successfully.'
+                searchParams.get('message') || 'WiPay payment was not completed successfully.'
               );
             }
             return;
@@ -187,24 +188,35 @@ function SuccessState({ eventName, batchId, quantity }) {
         </p>
       </div>
 
-      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <ResultActions bookingsLabel="View Booking Events" />
+    </>
+  );
+}
+
+function ResultActions({ bookingsLabel }) {
+  const currentUser = useCurrentUser();
+  const showBookings = currentUser?.role === ROLES.USER;
+
+  return (
+    <div className={`mt-9 grid grid-cols-1 gap-3 ${showBookings ? 'sm:grid-cols-2' : ''}`}>
+      {showBookings && (
         <Link
           to="/user"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
         >
           <CalendarCheck2 size={18} />
-          View Booking Events
+          {bookingsLabel}
         </Link>
+      )}
 
-        <Link
-          to="/"
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
-        >
-          <Home size={18} />
-          Go to Home Page
-        </Link>
-      </div>
-    </>
+      <Link
+        to="/"
+        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
+      >
+        <Home size={18} />
+        Go to Home Page
+      </Link>
+    </div>
   );
 }
 
@@ -236,23 +248,7 @@ function PendingState({ eventName, batchId }) {
         </p>
       </div>
 
-      <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Link
-          to="/user"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
-        >
-          <CalendarCheck2 size={18} />
-          Check My Bookings
-        </Link>
-
-        <Link
-          to="/"
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50"
-        >
-          <Home size={18} />
-          Go to Home Page
-        </Link>
-      </div>
+      <ResultActions bookingsLabel="Check My Bookings" />
     </>
   );
 }
