@@ -12,7 +12,9 @@ export const filterEventsByTab = (events, activeTab) => {
   }
 
   const normalizeStatus = (value) => {
-    const key = String(value || '').trim().toLowerCase();
+    const key = String(value || '')
+      .trim()
+      .toLowerCase();
     if (key === 'canceled' || key === 'cancel') return 'cancelled';
     return key;
   };
@@ -20,6 +22,9 @@ export const filterEventsByTab = (events, activeTab) => {
   const tabKey = normalizeStatus(activeTab);
   return events.filter((event) => normalizeStatus(event.status) === tabKey);
 };
+
+// Temporarily hidden from public pages at the client's request; set to true to show again.
+export const SHOW_PUBLIC_CAPACITY = false;
 
 /**
  * Calculate progress percentage for event seats
@@ -86,7 +91,10 @@ const inferCountryFromLocation = (location) => {
   const raw = String(location || '').trim();
   if (!raw) return '';
 
-  const parts = raw.split(',').map((part) => part.trim()).filter(Boolean);
+  const parts = raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
   const lastPart = parts.length > 1 ? parts[parts.length - 1] : '';
   if (lastPart && /[a-z]/i.test(lastPart) && !/\d/.test(lastPart)) {
     return normalizeCountryName(lastPart);
