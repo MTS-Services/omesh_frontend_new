@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import getFlagEmoji from './FlagIcon';
 import { resolveImageUrl } from '../../utils/images';
-import { formatLocationWithCountry } from '../../utils/eventUtils';
+import { formatLocationWithCountry, SHOW_PUBLIC_CAPACITY } from '../../utils/eventUtils';
 
 const getBarColor = (availableSeats, totalSeats, status) => {
   if (status === 'Sold Out') return 'bg-[#EB4645]';
@@ -132,26 +132,28 @@ const EventCard = ({ event }) => {
             <span className="flex items-center gap-1 text-sm font-medium text-gray-500">
               <span className="hidden md:block">Registration</span> Fee
             </span>
-            <h3 className="text-sm font-bold text-[#1FB356] sm:text-xl">
-              {displayFee}
-            </h3>
+            <h3 className="text-sm font-bold text-[#1FB356] sm:text-xl">{displayFee}</h3>
           </div>
 
           {/* Seat availability */}
-          <div className="mt-auto mb-3">
-            <div className="mb-0.5 flex items-center justify-between text-xs">
-              <span className="text-xs text-gray-700">Capacity</span>
-              <span className="text-xs font-medium text-gray-800">
-                {soldSeats}/{totalSeats}
-              </span>
+          {SHOW_PUBLIC_CAPACITY ? (
+            <div className="mt-auto mb-3">
+              <div className="mb-0.5 flex items-center justify-between text-xs">
+                <span className="text-xs text-gray-700">Capacity</span>
+                <span className="text-xs font-medium text-gray-800">
+                  {soldSeats}/{totalSeats}
+                </span>
+              </div>
+              <div className={`h-1.5 w-full overflow-hidden rounded-full ${capacityBg}`}>
+                <div
+                  className={`h-full rounded-full transition-all ${barColor}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             </div>
-            <div className={`h-1.5 w-full overflow-hidden rounded-full ${capacityBg}`}>
-              <div
-                className={`h-full rounded-full transition-all ${barColor}`}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
+          ) : (
+            <div className="mt-auto" />
+          )}
 
           {/* Buttons */}
           <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-2">

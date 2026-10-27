@@ -8,7 +8,7 @@ import getFlagEmoji from '../../../components/common/FlagIcon';
 import { resolveImageUrl } from '../../../utils/images';
 import { request } from '../../../api/request';
 import { ENDPOINT } from '../../../api/config/endpoints';
-import { formatLocationWithCountry } from '../../../utils/eventUtils';
+import { formatLocationWithCountry, SHOW_PUBLIC_CAPACITY } from '../../../utils/eventUtils';
 import TShirtSelector from '../../../components/ui/modals/TShirtSelector';
 
 const PAYPAL_CLIENT_ID = String(import.meta.env.VITE_PAYPAL_CLIENT_ID || '').trim();
@@ -126,10 +126,7 @@ const CheckoutView = () => {
     setParticipants((prev) => {
       if (prev.length === participantCount) return prev;
       if (prev.length > participantCount) return prev.slice(0, participantCount);
-      return [
-        ...prev,
-        ...Array.from({ length: participantCount - prev.length }, emptyParticipant),
-      ];
+      return [...prev, ...Array.from({ length: participantCount - prev.length }, emptyParticipant)];
     });
   }, [participantCount]);
 
@@ -207,7 +204,9 @@ const CheckoutView = () => {
     }
   };
 
-  const ticketPrice = selectedPricingTier ? Number(selectedPricingTier.price) : Number(event?.price || 0);
+  const ticketPrice = selectedPricingTier
+    ? Number(selectedPricingTier.price)
+    : Number(event?.price || 0);
   const subtotal = event ? (isGroupTier ? ticketPrice : ticketPrice * participantCount) : 0;
   const tshirtUnitPrice = Number(event?.tShirtPrice ?? 30);
   const selectedTShirtCount = participants.filter((p) => p.buyTShirt).length;
@@ -320,7 +319,9 @@ const CheckoutView = () => {
         (isMember || (p.email?.trim() && p.phoneNumber?.trim() && p.dateOfBirth?.trim()));
 
       if (!hasRequired) {
-        toast.error(isMember ? `Fill in name, age and gender for member ${index + 1}` : 'Required fields');
+        toast.error(
+          isMember ? `Fill in name, age and gender for member ${index + 1}` : 'Required fields'
+        );
         return false;
       }
 
@@ -983,7 +984,7 @@ const CheckoutView = () => {
                     </div>
 
                     {/* Capacity Bar */}
-                    {totalSeats > 0 && (
+                    {SHOW_PUBLIC_CAPACITY && totalSeats > 0 && (
                       <div className="mt-4 space-y-2">
                         <div className="flex items-center justify-between text-xs text-gray-600">
                           <span className="flex items-center gap-1">
@@ -1023,7 +1024,8 @@ const CheckoutView = () => {
                               className="flex items-center justify-between text-gray-600"
                             >
                               <span>
-                                {isGroupTier ? 'Member' : 'Participant'} {idx + 1} ({p.tshirtName} - Size {p.tShirtSize})
+                                {isGroupTier ? 'Member' : 'Participant'} {idx + 1} ({p.tshirtName} -
+                                Size {p.tShirtSize})
                               </span>
                               <span className="font-semibold text-green-600">
                                 ${tshirtUnitPrice.toFixed(2)} USD
